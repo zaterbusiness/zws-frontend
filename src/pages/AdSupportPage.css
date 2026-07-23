@@ -1,0 +1,240 @@
+/* ── Ad Support Page ── */
+.ad-root {
+  min-height: 100vh;
+  background: #0a0a0f;
+  color: #f0eee8;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  padding-bottom: 80px;
+}
+
+.ad-hero {
+  text-align: center;
+  padding: 80px 24px 52px;
+  max-width: 780px;
+  margin: 0 auto;
+}
+.ad-hero-badge {
+  display: inline-block;
+  background: rgba(251,191,36,0.1);
+  border: 1px solid rgba(251,191,36,0.3);
+  color: #fcd34d;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 6px 16px;
+  border-radius: 999px;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+.ad-hero-title {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  margin: 0 0 18px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: #f0eee8;
+}
+.ad-accent {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.ad-hero-sub {
+  font-size: 1.05rem;
+  color: #9e9b93;
+  line-height: 1.7;
+  margin: 0 0 40px;
+}
+
+/* Audience stats */
+.ad-audience-row {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.ad-audience-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 18px 28px;
+  text-align: center;
+  min-width: 110px;
+}
+.ad-audience-num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fbbf24;
+  margin-bottom: 6px;
+  line-height: 1;
+}
+.ad-audience-label {
+  font-size: 11px;
+  color: #6b6965;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+/* Section */
+.ad-section {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px 0;
+}
+.ad-section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f0eee8;
+  margin: 0 0 28px;
+}
+
+/* Ad types */
+.ad-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+.ad-type-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 28px 22px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.ad-type-card:hover {
+  border-color: rgba(251,191,36,0.25);
+  background: rgba(251,191,36,0.04);
+}
+.ad-type-icon { font-size: 1.8rem; margin-bottom: 12px; }
+.ad-type-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f0eee8;
+  margin: 0 0 8px;
+}
+.ad-type-desc {
+  font-size: 0.84rem;
+  color: #6b6965;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Steps */
+.ad-steps-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.ad-step {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 28px 22px;
+}
+.ad-step-num {
+  font-size: 2rem;
+  font-weight: 900;
+  color: rgba(251,191,36,0.25);
+  margin-bottom: 10px;
+  line-height: 1;
+  font-feature-settings: 'tnum';
+}
+.ad-step-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f0eee8;
+  margin: 0 0 8px;
+}
+.ad-step-desc {
+  font-size: 0.85rem;
+  color: #6b6965;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Pricing */
+.ad-pricing-card {
+  background: linear-gradient(135deg, rgba(251,191,36,0.07), rgba(245,158,11,0.04));
+  border: 1px solid rgba(251,191,36,0.2);
+  border-radius: 20px;
+  padding: 48px 40px;
+  text-align: center;
+}
+.ad-pricing-icon { font-size: 2.2rem; margin-bottom: 14px; }
+.ad-pricing-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f0eee8;
+  margin: 0 0 14px;
+}
+.ad-pricing-text {
+  color: #9e9b93;
+  font-size: 1rem;
+  line-height: 1.8;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.ad-pricing-text strong { color: #fbbf24; }
+
+/* Contact cards */
+.ad-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+.ad-contact-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 36px 28px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.ad-contact-card:hover { transform: translateY(-4px); }
+.ad-blue {
+  background: rgba(59,130,246,0.06);
+  border-color: rgba(59,130,246,0.2);
+}
+.ad-blue:hover { box-shadow: 0 8px 32px rgba(59,130,246,0.12); }
+.ad-green {
+  background: rgba(34,197,94,0.06);
+  border-color: rgba(34,197,94,0.2);
+}
+.ad-green:hover { box-shadow: 0 8px 32px rgba(34,197,94,0.12); }
+.ad-contact-icon { font-size: 2.2rem; margin-bottom: 10px; }
+.ad-contact-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6b6965;
+  margin-bottom: 6px;
+}
+.ad-blue .ad-contact-value { color: #93c5fd; }
+.ad-green .ad-contact-value { color: #86efac; }
+.ad-contact-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+.ad-contact-sub {
+  font-size: 0.8rem;
+  color: #6b6965;
+  margin-bottom: 18px;
+}
+.ad-contact-btn {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #f0eee8;
+  background: rgba(255,255,255,0.05);
+}
+.ad-contact-card:hover .ad-contact-btn { background: rgba(255,255,255,0.1); }
