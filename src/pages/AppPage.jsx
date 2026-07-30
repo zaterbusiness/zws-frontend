@@ -22,7 +22,7 @@ export default function AppPage() {
   const { user }                    = useAuth()
   const [app,      setApp]          = useState(null)
   const [loading,  setLoading]      = useState(true)
-  const [tab,      setTab]          = useState('frontend')
+const [tab,      setTab]          = useState('preview')
   const [paying,   setPaying]       = useState('')
   const [success,  setSuccess]      = useState('')
   const [error,    setError]        = useState('')
@@ -764,8 +764,9 @@ const CSS = `
 .ap-date{margin-top:auto;font-size:11px;color:#3a3a5a;font-weight:600;padding-top:14px;border-top:1px solid #1a1a30;}
 
 /* FILE LIST */
-.ap-files-info{display:flex;flex-direction:column;gap:6px;}
-.ap-file-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;border:1px solid #1e1e3a;cursor:pointer;transition:all .15s;background:#0f0f22;}
+/* delete these two old lines inside @media(max-width:700px) */
+.ap-files-info{flex-direction:row;flex-wrap:wrap;gap:6px;}
+.ap-file-item{flex:1 1 45%;padding:8px 10px;}
 .ap-file-item:hover{border-color:#5b4fff;background:rgba(91,79,255,0.08);}
 .ap-file-active{border-color:#5b4fff;background:rgba(91,79,255,0.12);}
 .ap-file-icon{font-size:16px;}
@@ -835,8 +836,12 @@ const CSS = `
   }
   .ap-title{font-size:15px;}
   .ap-prompt{font-size:11.5px;}
-  .ap-files-info{flex-direction:row;flex-wrap:wrap;gap:6px;}
-  .ap-file-item{flex:1 1 45%;padding:8px 10px;}
+  .ap-files-info{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .ap-file-item{flex:none;padding:8px 10px;}
   .ap-download-section{position:sticky;bottom:0;background:#0a0a16;padding-top:8px;}
 
   .ap-main{min-height:60vh;}

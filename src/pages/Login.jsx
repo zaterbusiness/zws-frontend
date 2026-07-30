@@ -163,4 +163,28 @@ const CSS = `
 .auth-switch{text-align:center;font-size:13px;color:#72727f;font-weight:500;}
 .auth-link{color:#c0392b;font-weight:800;text-decoration:none;}
 .auth-link:hover{text-decoration:underline;}
+@media(max-width:480px){
+  .auth-root{padding:16px;align-items:flex-start;padding-top:40px;}
+  .auth-card{padding:28px 20px;border-radius:18px;max-width:100%;}
+  .auth-logo-img{width:32px;height:32px;}
+  .auth-logo-text{font-size:15px;}
+  .auth-title{font-size:22px;}
+  .auth-sub{font-size:13px;margin-bottom:20px;}
+  .auth-form{gap:14px;}
+  .auth-input{padding:10px 12px;font-size:13.5px;}
+  .auth-label{font-size:11px;}
+  .auth-pw-header{flex-wrap:wrap;gap:4px;}
+  .auth-forgot{font-size:11.5px;}
+  .auth-btn{padding:12px;font-size:14px;}
+  .auth-divider{margin:14px 0;}
+  .auth-divider span{font-size:11px;}
+  .auth-switch{font-size:12.5px;}
+  .auth-google-box{min-height:40px;}
+}
+
+@media(max-width:360px){
+  .auth-card{padding:22px 16px;}
+  .auth-title{font-size:20px;}
+  .auth-logo-wrap{gap:8px;margin-bottom:18px;}
+}
 `
