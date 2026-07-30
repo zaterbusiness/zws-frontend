@@ -52,7 +52,7 @@ export default function CreditsPage() {
     if (!order?.paymentSessionId) throw new Error('No payment session returned from server.')
     sessionStorage.setItem('zws_pending_txn', order.merchantTransactionId)
 
-    const cashfree = await window.Cashfree({ mode: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox' })
+    const cashfree = await window.Cashfree({ mode: 'sandbox' })
     cashfree.checkout({
       paymentSessionId: order.paymentSessionId,
       redirectTarget: '_self', // navigates in the same tab, like PhonePe did
@@ -170,7 +170,7 @@ export default function CreditsPage() {
             </div>
             {!hasPaid && (
               <button className="cp-unlock-btn" onClick={handleUnlock} disabled={buyingU}>
-               {buyingC ? <><Spin /> Redirecting to Cashfree...</> : '🔓 Pay ₹99 to Unlock'}
+               {buyingU ? <><Spin /> Redirecting to Cashfree...</> : '🔓 Pay ₹99 to Unlock'}
               </button>
             )}
           </div>
@@ -278,7 +278,7 @@ export default function CreditsPage() {
                     ? <><Spin /> Redirecting to cashfree</>
                     : <>💳 Buy {CREDITS_PER_PACK} Credits — ₹{PRICE_PER_PACK}</>}
                 </button>
-                <div className="cp-buy-note">🔒 Secured by PhonePe · UPI · Cards · Net Banking</div>
+                <div className="cp-buy-note">🔒 Secured by Cashfree · UPI · Cards · Net Banking</div>
               </div>
             </div>
           )}
