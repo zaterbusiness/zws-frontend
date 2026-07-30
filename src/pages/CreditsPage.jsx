@@ -45,35 +45,32 @@ export default function CreditsPage() {
 
   // ── PhonePe: create order, then redirect the whole page to PhonePe's pay page.
   // No modal, no client-side signature — verification happens on the callback page.
-  const startPhonePePayment = async ({ orderEndpoint, orderBody, setbuying }) => {
-    setError(''); setSuccess(''); setbuying(true)
-    try {
-      const order = await api.post(orderEndpoint, orderBody)
-      if (!order?.redirectUrl) throw new Error('No redirect URL returned from server.')
-      // Stash which txn we're waiting on so the callback page (and this page, on return) can reconcile
-      sessionStorage.setItem('zws_pending_txn', order.merchantTransactionId)
-      window.location.href = order.redirectUrl
-    } catch (err) {
-      setError(err.message || 'Failed to start payment.')
-      setbuying(false)
-    }
+ const startCashfreePayment = async ({ orderEndpoint, orderBody, setbuying }) => {
+  setError(''); setSuccess(''); setbuying(true)
+  try {
+    const order = await api.post(orderEndpoint, orderBody)
+    if (!order?.paymentSessionId) throw new Error('No payment session returned from server.')
+    sessionStorage.setItem('zws_pending_txn', order.merchantTransactionId)
+
+    const cashfree = await window.Cashfree({ mode: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox' })
+    cashfree.checkout({
+      paymentSessionId: order.paymentSessionId,
+      redirectTarget: '_self', // navigates in the same tab, like PhonePe did
+    })
+  } catch (err) {
+    setError(err.message || 'Failed to start payment.')
+    setbuying(false)
   }
+}
 
   // ── Flow 1: Unlock download & hosting ─────────────────────
-  const handleUnlock = () => startPhonePePayment({
-    orderEndpoint: '/credits/unlock/order',
-    setbuying:     setBuyingU,
-  })
+ const handleUnlock = () => startCashfreePayment({ orderEndpoint: '/credits/unlock/order', setbuying: setBuyingU })
 
   // ── Flow 2: Buy credits (requires unlock first) ────────────
   const handleBuyCredits = (planKey = selectedPack) => {
-    const pack = PACKS.find(p => p.key === planKey) || PACKS[0]
-    startPhonePePayment({
-      orderEndpoint: '/credits/purchase/order',
-      orderBody:     { plan: pack.key },
-      setbuying:     setBuyingC,
-    })
-  }
+  const pack = PACKS.find(p => p.key === planKey) || PACKS[0]
+  startCashfreePayment({ orderEndpoint: '/credits/purchase/order', orderBody: { plan: pack.key }, setbuying: setBuyingC })
+}
 
   // ── If we land back on /credits with a pending txn still in sessionStorage
   // (e.g. user navigated here directly instead of via /payment/callback), reconcile it.
@@ -150,7 +147,7 @@ export default function CreditsPage() {
 
   <button className="cp-buy-btn" onClick={() => handleBuyCredits()} disabled={buyingC}>
     {buyingC
-      ? <><Spin /> Redirecting to PhonePe...</>
+      ? <><Spin /> Redirecting to cashfree...</>
       : <>💳 Buy {PACKS.find(p => p.key === selectedPack)?.credits} Credits — ₹{PACKS.find(p => p.key === selectedPack)?.price}</>}
   </button>
 </div>
@@ -173,7 +170,7 @@ export default function CreditsPage() {
             </div>
             {!hasPaid && (
               <button className="cp-unlock-btn" onClick={handleUnlock} disabled={buyingU}>
-                {buyingU ? <><Spin /> Redirecting to PhonePe...</> : '🔓 Pay ₹99 to Unlock'}
+               {buyingC ? <><Spin /> Redirecting to Cashfree...</> : '🔓 Pay ₹99 to Unlock'}
               </button>
             )}
           </div>
@@ -278,7 +275,7 @@ export default function CreditsPage() {
                 <div className="cp-buy-credits-label">= {CREDITS_PER_PACK} Credits</div>
                 <button className="cp-buy-btn" onClick={() => handleBuyCredits()} disabled={buyingC}>
                   {buyingC
-                    ? <><Spin /> Redirecting to PhonePe...</>
+                    ? <><Spin /> Redirecting to cashfree</>
                     : <>💳 Buy {CREDITS_PER_PACK} Credits — ₹{PRICE_PER_PACK}</>}
                 </button>
                 <div className="cp-buy-note">🔒 Secured by PhonePe · UPI · Cards · Net Banking</div>
