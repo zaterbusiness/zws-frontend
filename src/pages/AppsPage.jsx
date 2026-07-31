@@ -276,6 +276,8 @@ const CSS = `
   border-radius: 16px; overflow: hidden;
   cursor: pointer; transition: all .22s;
   animation: fadeUp .35s ease both;
+  display: flex;
+  flex-direction: column;
 }
 .aps-card:hover {
   border-color: #5b4fff;
@@ -285,6 +287,7 @@ const CSS = `
 
 /* Card preview area */
 .aps-card-top {
+  order: 1;
   background: linear-gradient(135deg, #0d0d22, #12122a);
   padding: 20px; height: 110px;
   display: flex; align-items: center;
@@ -314,7 +317,10 @@ const CSS = `
 }
 
 /* Card body */
-.aps-card-body { padding: 16px; }
+.aps-card-body {
+  order: 2;
+  padding: 16px;
+}
 .aps-card-title-row {
   display: flex; align-items: flex-start;
   justify-content: space-between; gap: 10px;
@@ -378,7 +384,19 @@ const CSS = `
 .aps-del-btn:disabled { opacity: .45; cursor: not-allowed; }
 
 @media (max-width: 600px) {
-  .aps-grid { grid-template-columns: 1fr; }
-  .aps-title { font-size: 24px; }
+  .aps-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .aps-title { font-size: 22px; }
+  .aps-card-top { height: 90px; padding: 12px; gap: 8px; }
+  .aps-card-icon { font-size: 22px; }
+  .aps-card-files { gap: 2px; }
+  .aps-file-chip { font-size: 8px; padding: 1px 5px; }
+  .aps-card-body { padding: 10px; }
+  .aps-card-name { font-size: 12px; }
+  .aps-card-prompt { font-size: 9px; margin-bottom: 8px; }
+  .aps-status-badge { font-size: 8px; padding: 2px 6px; }
+  .aps-card-footer { flex-direction: column; align-items: stretch; gap: 6px; }
+  .aps-card-actions { justify-content: space-between; }
+  .aps-open-btn { flex: 1; text-align: center; font-size: 10px; padding: 5px 8px; }
+  .aps-card-date { font-size: 8px; }
 }
 `

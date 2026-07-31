@@ -433,13 +433,14 @@ function extractCleanCode(raw) {
 )  : isReady ? (
               <div className="ap-code-view">
                 {/* Tab bar */}
+
                <div className="ap-tabs">
   {TABS.map(t => (
     <button key={t} className={`ap-tab ${tab===t?'ap-tab-active':''}`} onClick={() => setTab(t)}>
       {TAB_ICONS[t]} {TAB_LABELS[t]}
     </button>
   ))}
-  
+
   {tab !== 'preview' && (
     <button className="ap-copy-btn" onClick={copyCode}>
       {copied ? 'Copied!' : 'Copy Code'}
@@ -476,6 +477,12 @@ function extractCleanCode(raw) {
     <pre className="ap-pre"><code>{currentCode}</code></pre>
   </div>
 )}
+
+{tab === 'preview' && (
+  <div className="ap-preview-scroll-hint">
+    <span className="ap-preview-arrow">▼</span>
+  </div>
+)}
               </div>
             ) : (
               <div className="ap-gen-state">
@@ -485,6 +492,7 @@ function extractCleanCode(raw) {
               </div>
             )}
           </main>
+          
         </div>
       </div>
 
@@ -815,7 +823,7 @@ const CSS = `
 .ap-gen-files{display:flex;flex-direction:column;gap:10px;width:100%;max-width:260px;}
 .ap-gen-file{display:flex;align-items:center;gap:10px;font-size:12px;color:#6060a0;font-weight:600;}
 .ap-gen-dot{width:8px;height:8px;border-radius:50%;background:#5b4fff;flex-shrink:0;animation:pulse 1.5s ease-in-out infinite;}
-
+.ap-preview-scroll-hint{display:none;}
 /* ===== TABLET ===== */
 @media(max-width:1024px){
   .ap-layout{grid-template-columns:230px 1fr;}
@@ -828,6 +836,37 @@ const CSS = `
   .ap-nav{height:auto;flex-wrap:wrap;padding:10px 12px;gap:8px;}
   .ap-status-pill{order:3;}
   .ap-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:auto;min-height:calc(100vh - 58px);}
+  .ap-tab-arrow{display:inline-block;margin-left:6px;font-size:9px;transition:transform .2s ease;opacity:0.6;transform:rotate(-90deg);}
+.ap-tab-arrow-open{opacity:1;color:#5b4fff;transform:rotate(0deg);}
+.ap-preview-scroll-hint{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:fixed;
+  bottom:90px;
+  left:50%;
+  transform:translateX(-50%);
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:#5b4fff;
+  box-shadow:0 4px 16px rgba(91,79,255,0.5);
+  z-index:150;
+  animation:previewArrowPop .3s ease;
+}
+.ap-preview-arrow{
+  color:#fff;
+  font-size:16px;
+  animation:previewArrowBounce 1.2s ease-in-out infinite;
+}
+@keyframes previewArrowPop{
+  from{opacity:0;transform:translateX(-50%) scale(0.6);}
+  to{opacity:1;transform:translateX(-50%) scale(1);}
+}
+@keyframes previewArrowBounce{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(6px);}
+}
   .ap-sidebar{
     max-height:none;
     border-right:none;

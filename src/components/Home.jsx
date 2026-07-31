@@ -591,7 +591,7 @@ const removeLogo = () => {
         <nav className="h-nav">
           <div className="h-nav-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img src={zaterLogo} alt="Zater Logo" className="h-logo-img" />
-            <span className="h-logo-text">Zater Web Studio</span>
+           <span className="h-logo-text">ZATER WEB STUDIO</span>
           </div>
           <div className="h-nav-right">
             <button className="h-nav-link" onClick={() => navigate('/projects')}>My Projects</button>
@@ -1728,9 +1728,74 @@ const CSS = `
 .h-manual-url-btn:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.3);transform:translateY(-1px);}
 .h-manual-url-note{font-size:11px;color:#4040600;color:#404060;font-weight:500;}
 
-@media(max-width:1000px){.rec-grid{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:900px){.tpl-grid{grid-template-columns:repeat(2,1fr);}.apt-grid{grid-template-columns:1fr;}.how-grid{grid-template-columns:1fr;}.how-card{border-radius:0!important;border-left:1.5px solid #e8e8f0!important;border-bottom:none;}.how-card:first-child{border-radius:18px 18px 0 0!important;}.how-card:last-child{border-radius:0 0 18px 18px!important;border-bottom:1.5px solid #e8e8f0!important;}.how-arrow{display:none;}}
-@media(max-width:600px){.tpl-grid{grid-template-columns:1fr;}.h-pricing-row{flex-direction:column;}.h-step-arrow{display:none;}.h-nav-link{display:none;}.h-what-grid{grid-template-columns:1fr 1fr;}.rec-grid{grid-template-columns:1fr 1fr;}}
+/* ══ RESPONSIVE ══ */
+@media(max-width:1000px){
+  .rec-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:900px){
+  .tpl-grid{grid-template-columns:repeat(2,1fr);}
+  .apt-grid{grid-template-columns:1fr;}
+  .how-grid{grid-template-columns:1fr;}
+  .how-card{border-radius:0!important;border-left:1.5px solid #e8e8f0!important;border-bottom:none;}
+  .how-card:first-child{border-radius:18px 18px 0 0!important;}
+  .how-card:last-child{border-radius:0 0 18px 18px!important;border-bottom:1.5px solid #e8e8f0!important;}
+  .how-arrow{display:none;}
+  .h-nav-link{padding:6px 10px;font-size:12px;}
+}
+@media(max-width:768px){
+  .h-nav{padding:0 14px;height:52px;}
+  .h-logo-text{font-size:14px;}
+  .h-nav-right{gap:6px;}
+  .h-nav-link{display:none;}
+  .h-nav-deploy,.h-nav-free{display:none;}
+  .h-nav-credits{padding:5px 10px;}
+  .h-hero{padding:80px 16px 60px;}
+  .h-title{font-size:clamp(30px,9vw,44px);letter-spacing:-1px;}
+  .h-subtitle{font-size:14px;max-width:100%;}
+  .h-box{max-width:100%;}
+  .h-textarea{font-size:14px;min-height:76px;}
+  .h-toolbar{flex-direction:column;align-items:stretch;gap:10px;}
+  .h-toolbar-left{flex-wrap:wrap;justify-content:center;}
+  .h-toolbar-right{justify-content:space-between;}
+  .h-generate-btn{flex:1;justify-content:center;}
+  .h-mode-btn{padding:8px 14px;font-size:12px;}
+  .h-app-banner-items{font-size:11px;gap:6px;}
+  .h-examples{gap:6px;}
+  .h-chip-ex{font-size:11px;padding:5px 11px;}
+  .apt-grid{grid-template-columns:1fr;gap:16px;}
+  .rec-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .h-pricing-row{flex-direction:column;gap:14px;}
+  .h-step-arrow{display:none;}
+  .h-step-card{padding:20px 14px;}
+  .h-what-grid{grid-template-columns:1fr 1fr;}
+  .h-manual-card{flex-direction:column;padding:22px 18px;gap:18px;}
+  .h-manual-right{align-items:stretch;width:100%;}
+  .h-manual-url-btn{justify-content:center;}
+  .tpl-grid{grid-template-columns:1fr;}
+}
+@media(max-width:480px){
+  .h-nav-logo .h-logo-text{display:none;}
+  .h-avatar{width:32px;height:32px;}
+  .h-pill{font-size:11px;padding:6px 14px;}
+  .h-title{font-size:clamp(26px,10vw,36px);}
+  .h-subtitle{font-size:13px;margin-bottom:24px;}
+  .h-mode-toggle{width:100%;justify-content:center;}
+  .h-box-inner{padding:14px 14px 0;}
+  .h-attach-btn{font-size:11px;padding:5px 9px;}
+  .h-model-tag{font-size:10px;padding:5px 9px;}
+  .h-clarify-opt{font-size:11.5px;padding:9px 12px;}
+  .rec-grid{grid-template-columns:1fr;}
+  .apt-body{padding:14px 14px 16px;}
+  .apt-card-title{font-size:16px;}
+  .tpl-body{padding:14px 14px 16px;}
+  .tpl-card-title{font-size:16px;}
+  .h-what-grid{grid-template-columns:1fr;}
+  .h-step-price{font-size:26px;}
+  .h-manual-title{font-size:16px;}
+  .h-manual-price-num{font-size:28px;}
+  .how-card{padding:26px 18px;}
+  .apt-modal-actions{grid-template-columns:1fr;}
+}
 
 /* ══ AD POPUP ══ */
 @keyframes adSlideUp{from{opacity:0;transform:translateY(30px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -1795,8 +1860,6 @@ const CSS = `
 .apt-gh-btn{padding:13px;border-radius:10px;background:#5b4fff;border:none;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .18s;}
 .apt-gh-btn:hover{opacity:.88;}
 .apt-modal-note{text-align:center;font-size:11px;color:#3a3a5a;padding:0 20px 18px;font-weight:500;}
-@media(max-width:700px){.apt-grid{grid-template-columns:1fr;}.apt-modal-actions{grid-template-columns:1fr;}}
-@media(max-width:480px){.apt-grid{grid-template-columns:1fr;}}
 .h-attach-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1.5px solid #e2e2ea;background:#fff;font-size:12px;font-weight:700;color:#5a5a70;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .18s;}
 .h-attach-btn:hover{border-color:#c0392b;color:#c0392b;}
 .h-hidden-input{display:none;}

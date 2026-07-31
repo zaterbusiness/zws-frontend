@@ -348,5 +348,12 @@ const CSS = `
 .pj-regen-warning{background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.25);border-radius:10px;padding:11px 13px;font-size:13px;color:#92400e;font-weight:500;line-height:1.5;margin-bottom:16px;}
 .pj-delete-warning{background:rgba(239,68,68,0.06);border:1.5px solid rgba(239,68,68,0.2);border-radius:10px;padding:13px 15px;font-size:13px;color:#991b1b;font-weight:500;line-height:1.65;}
 
-@media(max-width:600px){.pj-grid{grid-template-columns:1fr;}.pj-card-actions{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){
+  .pj-grid{grid-template-columns:1fr 1fr;gap:12px;}
+  .pj-card{padding:14px;gap:9px;}
+  .pj-card-title{font-size:14px;}
+  .pj-card-prompt{font-size:11px;padding:7px 9px;}
+  .pj-card-actions{grid-template-columns:1fr 1fr;gap:6px;}
+  .pj-btn{font-size:11px;padding:7px 8px;}
+}
 `
