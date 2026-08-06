@@ -398,19 +398,22 @@ const load = useCallback(async (t=tab) => {
                 <table className="adm-table">
                   <thead><tr><th>User</th><th>Status</th><th>Sites</th><th>Spent</th><th>Joined</th><th>Actions</th></tr></thead>
                   <tbody>{users.map((u,i)=>(
-                    <tr key={i} className="adm-tr-hover">
-                      <td onClick={()=>openUser(u)} style={{cursor:'pointer'}}><div className="adm-user-cell"><div className="adm-avatar">{u.avatar}</div><div><div className="adm-uname">{u.name}</div><div className="adm-uemail">{u.email}</div></div></div></td>
-                      <td><span style={{fontSize:11,fontWeight:700,color:stColor(u.status||'active'),background:`${stColor(u.status||'active')}18`,padding:'3px 8px',borderRadius:100}}>{u.status==='paused'?'⏸ Paused':'🟢 Active'}</span></td>
-                      <td>{u.total_projects}</td>
-                      <td style={{color:'#22c55e',fontWeight:700}}>{fmtRs(u.total_spent)}</td>
-                      <td style={{fontSize:11,color:'#a0a0b0'}}>{fmtDay(u.created_at)}</td>
-                      <td><div style={{display:'flex',gap:4}}>
-                        <button className="adm-act-btn adm-act-view" onClick={()=>openUser(u)}>View</button>
-                        <button className={`adm-act-btn ${u.status==='paused'?'adm-act-activate':'adm-act-pause'}`} onClick={()=>toggleStatus(u)}>{u.status==='paused'?'▶ Resume':'⏸ Pause'}</button>
-                        <button className="adm-act-btn adm-act-delete" onClick={()=>deleteUser(u)}>Delete</button>
-                      </div></td>
-                    </tr>
-                  ))}</tbody>
+  <tr key={i} className="adm-tr-hover">
+    <td data-label="User" onClick={()=>openUser(u)} style={{cursor:'pointer'}}>
+      <div className="adm-user-cell"><div className="adm-avatar">{u.avatar}</div>
+      <div><div className="adm-uname">{u.name}</div><div className="adm-uemail">{u.email}</div></div></div>
+    </td>
+    <td data-label="Status"><span style={{fontSize:11,fontWeight:700,color:stColor(u.status||'active'),background:`${stColor(u.status||'active')}18`,padding:'3px 8px',borderRadius:100}}>{u.status==='paused'?'⏸ Paused':'🟢 Active'}</span></td>
+    <td data-label="Sites">{u.total_projects}</td>
+    <td data-label="Spent" style={{color:'#22c55e',fontWeight:700}}>{fmtRs(u.total_spent)}</td>
+    <td data-label="Joined" style={{fontSize:11,color:'#a0a0b0'}}>{fmtDay(u.created_at)}</td>
+    <td data-label="Actions"><div style={{display:'flex',gap:4}}>
+      <button className="adm-act-btn adm-act-view" onClick={()=>openUser(u)}>View</button>
+      <button className={`adm-act-btn ${u.status==='paused'?'adm-act-activate':'adm-act-pause'}`} onClick={()=>toggleStatus(u)}>{u.status==='paused'?'▶ Resume':'⏸ Pause'}</button>
+      <button className="adm-act-btn adm-act-delete" onClick={()=>deleteUser(u)}>Delete</button>
+    </div></td>
+  </tr>
+))}</tbody>
                 </table>
               </div>
             </div>

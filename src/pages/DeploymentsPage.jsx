@@ -233,14 +233,14 @@ export default function DeploymentsPage() {
                           <span className="dp-detail-label">Platform</span>
                           <span className="dp-detail-value">GitHub Pages (Free)</span>
                         </div>
-                      {p.github_repo && (
+                     {p.github_repo && (
   <div className="dp-detail-row">
     <span className="dp-detail-label">Repository</span>
     
       href={`https://github.com/${p.github_repo}`}
       target="_blank" rel="noopener noreferrer"
       className="dp-detail-value dp-detail-link dp-mono"
-     <a>
+    <a>
       {p.github_repo}
     </a>
   </div>
@@ -277,18 +277,7 @@ export default function DeploymentsPage() {
                       </div>
 
                       
-                       href={isLive ? p.github_url : undefined}
-                        onClick={!isLive ? e => {
-                          e.preventDefault()
-                          alert('Site not live yet. GitHub Pages takes 1–3 minutes. Please wait and re-check.')
-                        } : undefined}
-                        target="_blank" rel="noopener noreferrer"
-                        className={`dp-url-row ${!isLive ? 'dp-url-row-disabled' : ''}`}
-                      <a>
-                        <span className="dp-url-icon">🌐</span>
-                        <span className="dp-url-text">{p.github_url}</span>
-                        <span className="dp-url-arrow">{isLive ? '↗' : '🔒'}</span>
-                      </a>
+                       
 
                       {isPend && (
                         <div className="dp-pending-notice">

@@ -454,7 +454,17 @@ setRecentApps((ad.apps || []).slice(0, 4))
     ta.style.height = 'auto'
     ta.style.height = Math.min(ta.scrollHeight, 200) + 'px'
   }
+const menuRef = useRef(null)   // add this near your other refs
 
+useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (menuRef.current && !menuRef.current.contains(e.target)) {
+      setMenuOpen(false)
+    }
+  }
+  document.addEventListener('mousedown', handleClickOutside)
+  return () => document.removeEventListener('mousedown', handleClickOutside)
+}, [])
 const handleGenerate = async (customPrompt) => {
   const p = (customPrompt || prompt).trim()
   if (!p) return
@@ -605,7 +615,7 @@ const removeLogo = () => {
   onClick={() => navigate('/credits')}
 />
             </button>
-            <div className="h-avatar-wrap">
+            <div className="h-avatar-wrap" ref={menuRef}>
               <button className="h-avatar" onClick={() => setMenuOpen(o => !o)}>
                 {user?.avatar?.startsWith('http')
                   ? <img src={user.avatar} alt="" style={{width:36,height:36,borderRadius:'50%',objectFit:'cover'}}/>
