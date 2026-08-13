@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../utils/api'
-
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 export default function ProjectsPage() {
   const navigate               = useNavigate()
   const [projects, setProjects] = useState([])
@@ -17,7 +17,20 @@ export default function ProjectsPage() {
   const [regenModal,  setRegenModal]  = useState(null)
   const [regenPrompt, setRegenPrompt] = useState('')
   const [regenBusy,   setRegenBusy]   = useState(false)
+const [analyticsModal, setAnalyticsModal]     = useState(null)
+const [analyticsData, setAnalyticsData]       = useState(null)
+const [analyticsLoading, setAnalyticsLoading] = useState(false)
 
+const openAnalytics = async (p) => {
+  setAnalyticsModal(p); setAnalyticsData(null); setAnalyticsLoading(true)
+  try {
+    const d = await api.get(`/analytics/${p.id}`)
+    setAnalyticsData(d)
+  } catch (err) {
+    setAnalyticsData({ error: err.message || 'Failed to load analytics.' })
+  }
+  finally { setAnalyticsLoading(false) }
+}
   // Delete confirm state
   const [deleteModal,   setDeleteModal]   = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
@@ -154,6 +167,9 @@ export default function ProjectsPage() {
 >
   👁️ View
 </button>
+<button className="pj-btn pj-btn-outline" onClick={() => openAnalytics(p)} disabled={p.status !== 'ready'}>
+  📊 Analysis
+</button>
                     <button className="pj-btn pj-btn-outline" onClick={() => openEdit(p)}>
                       ✏️ Edit
                     </button>
@@ -200,7 +216,65 @@ export default function ProjectsPage() {
             </div>
           </div>
         )}
+{analyticsModal && (
+  <div className="pj-modal-overlay" onClick={() => setAnalyticsModal(null)}>
+    <div className="pj-modal pj-modal-lg" onClick={e => e.stopPropagation()}>
+      <div className="pj-modal-header">
+        <h2 className="pj-modal-title">📊 {analyticsModal.title} — Analytics</h2>
+        <button className="pj-modal-close" onClick={() => setAnalyticsModal(null)}>✕</button>
+      </div>
+      <div className="pj-modal-body">
+        {analyticsLoading ? (
+          <div className="pj-loading" style={{padding:'40px 0'}}><div className="pj-spinner" /><p>Loading…</p></div>
+        ) : !analyticsData || analyticsData.total === 0 ? (
+          <div style={{textAlign:'center', padding:'30px 0', color:'#72727f', fontSize:13}}>
+            No views yet. Views are counted once visitors open your live site.
+          </div>
+        ) : (
+          <>
+            <div style={{display:'flex', gap:12, marginBottom:18}}>
+              <div style={{flex:1, background:'#fafafa', border:'1px solid #f0f0f6', borderRadius:10, padding:'12px 14px'}}>
+                <div style={{fontSize:11, color:'#a0a0b0', fontWeight:700, textTransform:'uppercase'}}>Total Views</div>
+                <div style={{fontSize:22, fontWeight:900, fontFamily:"'Playfair Display',serif"}}>{analyticsData.total}</div>
+              </div>
+              <div style={{flex:1, background:'#fafafa', border:'1px solid #f0f0f6', borderRadius:10, padding:'12px 14px'}}>
+                <div style={{fontSize:11, color:'#a0a0b0', fontWeight:700, textTransform:'uppercase'}}>Peak Hour</div>
+                <div style={{fontSize:22, fontWeight:900, fontFamily:"'Playfair Display',serif"}}>
+                  {analyticsData.peakHour !== null ? `${analyticsData.peakHour}:00` : '—'}
+                </div>
+              </div>
+            </div>
 
+            <div style={{fontSize:12, fontWeight:700, color:'#6b6b7a', marginBottom:8}}>Views — last 30 days</div>
+            <ResponsiveContainer width="100%" height={180}>
+              <LineChart data={analyticsData.byDay}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f6" />
+                <XAxis dataKey="day" tick={{fontSize:10}} />
+                <YAxis allowDecimals={false} tick={{fontSize:10}} />
+                <Tooltip />
+                <Line type="monotone" dataKey="views" stroke="#c0392b" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+
+            <div style={{fontSize:12, fontWeight:700, color:'#6b6b7a', margin:'18px 0 8px'}}>Views by hour of day</div>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={analyticsData.byHour}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f6" />
+                <XAxis dataKey="hour" tick={{fontSize:10}} tickFormatter={h => `${h}:00`} />
+                <YAxis allowDecimals={false} tick={{fontSize:10}} />
+                <Tooltip labelFormatter={h => `${h}:00`} />
+                <Bar dataKey="views" fill="#0a0a12" radius={[4,4,0,0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </>
+        )}
+      </div>
+      <div className="pj-modal-footer">
+        <button className="pj-btn pj-btn-outline" onClick={() => setAnalyticsModal(null)}>Close</button>
+      </div>
+    </div>
+  </div>
+)}
         {/* ── REGENERATE MODAL ── */}
         {regenModal && (
           <div className="pj-modal-overlay" onClick={() => setRegenModal(null)}>
