@@ -47,18 +47,32 @@ export const AuthProvider = ({ children }) => {
     return d.user
   }
 
-  // ── Logout ──────────────────────────────────────────────────
- const logout = () => {
-  api.clearToken()
-  setUser(null)
-  if (window.google?.accounts?.id) {
-    window.google.accounts.id.disableAutoSelect()
+  // ── Email OTP: request code ─────────────────────────────────
+  const sendOTP = async (email) => {
+    const d = await api.post('/auth/send-otp', { email })
+    return d.message
   }
-  window.location.href = '/login'
-}
+
+  // ── Email OTP: verify code + login ──────────────────────────
+  const loginWithOTP = async (email, otp) => {
+    const d = await api.post('/auth/verify-otp', { email, otp })
+    api.setToken(d.token)
+    setUser(d.user)
+    return d.user
+  }
+
+  // ── Logout ──────────────────────────────────────────────────
+  const logout = () => {
+    api.clearToken()
+    setUser(null)
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.disableAutoSelect()
+    }
+    window.location.href = '/login'
+  }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, loginWithGoogle, sendOTP, loginWithOTP, logout }}>
       {children}
     </AuthContext.Provider>
   )

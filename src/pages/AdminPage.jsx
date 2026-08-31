@@ -2,9 +2,8 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import zaterLogo from '../assets/zater-logo.jpeg'
 
-const TABS = ['dashboard','users','projects','templates','payments','credits','ads','analytics']
-const TAB_ICONS = { dashboard:'📊', users:'👥', projects:'🌐', templates:'🧩', payments:'💳', credits:'🪙', ads:'📢', analytics:'📈' }
-
+const TABS = ['dashboard','users','apps','projects','templates','payments','credits','ads','analytics']
+const TAB_ICONS = { dashboard:'📊', users:'👥', apps:'⚛️', projects:'🌐', templates:'🧩', payments:'💳', credits:'🪙', ads:'📢', analytics:'📈' }
 const adminApi = {
   base: () => import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: () => ({ 'Content-Type':'application/json', Authorization:`Bearer ${localStorage.getItem('zater_admin_token')||''}` }),
@@ -73,7 +72,10 @@ const [creditSaving,setCreditSaving] = useState(false)
   const [confirm,setConfirm]=useState(null)
 const [platformEnabled, setPlatformEnabled] = useState(true)
 const [platformSaving, setPlatformSaving]   = useState(false)
-
+const [apps,setApps]           = useState([])
+const [appsSearch,setAppsSearch] = useState('')
+const [appsTotal,setAppsTotal]   = useState(0)
+const [pushingGit,setPushingGit] = useState(null)
 
   const handleLogin = async (e) => {
     e.preventDefault(); setLoginLoad(true); setLoginErr('')
@@ -86,7 +88,16 @@ const [platformSaving, setPlatformSaving]   = useState(false)
       setAdminInfo(d.admin); setIsLoggedIn(true)
     } catch(err){setLoginErr(err.message)} finally{setLoginLoad(false)}
   }
-
+const pushAppToGithub = async (app) => {
+  setPushingGit(app.id); setError('')
+  try {
+    const d = await adminApi.post(`/admin/apps/${app.id}/github-push`)
+    setApps(prev => prev.map(a => a.id===app.id ? {...a, github_repo_url: d.url} : a))
+    setSuccess(d.alreadyPushed ? 'Already pushed — opening existing repo.' : 'Pushed to GitHub!')
+    window.open(d.url, '_blank')
+  } catch (err) { setError(err.message) }
+  finally { setPushingGit(null) }
+}
   const handleLogout = () => {
     localStorage.removeItem('zater_admin_token'); localStorage.removeItem('zater_admin_info')
     setIsLoggedIn(false); setAdminInfo(null); setSelUser(null); setUserDetail(null); setDash(null)
@@ -113,6 +124,10 @@ const load = useCallback(async (t=tab) => {
     }
     else if (t==='ads') { const d=await adminApi.get('/ads/admin/list'); setAds(d.ads||[]) }
     else if (t==='analytics') { const d=await adminApi.get('/ads/admin/views'); setViews(d) }
+    else if (t==='apps') {
+  const d = await adminApi.get(`/admin/apps?search=${encodeURIComponent(appsSearch)}`)
+  setApps(d.apps||[]); setAppsTotal(d.total||0)
+}
   } catch(err) {
     const msg = err.message||''
     if (msg.includes('Invalid admin')||msg.includes('No admin token')||msg.includes('expired')||msg.includes('not found')) {
@@ -796,7 +811,52 @@ const d=await adminApi.post('/admin/credits/adjust',{userId:u.id,delta:100,reaso
               </div>
             </div>
           )}
+{/* ═══ APPS (GitHub push) ═══ */}
+{tab==='apps'&&(
+  <div className="adm-content">
+    <div className="adm-toolbar">
+      <input className="adm-search" placeholder="Search app, user or email..."
+        value={appsSearch} onChange={e=>setAppsSearch(e.target.value)}
+        onKeyDown={e=>e.key==='Enter'&&load('apps')}/>
+      <button className="adm-filter-btn" onClick={()=>load('apps')}>Search</button>
+      <div className="adm-total">{fmt(appsTotal)} apps</div>
+    </div>
 
+    {apps.length===0
+      ? <div className="adm-card"><div className="adm-empty">No apps found.</div></div>
+      : (
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:14}}>
+        {apps.map((a,i)=>(
+          <div key={i} className="adm-card" style={{display:'flex',flexDirection:'column',gap:10}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
+              <div className="adm-uname" style={{fontSize:14}}>{a.title}</div>
+              <span style={{fontSize:11,fontWeight:700,color:stColor(a.status),background:`${stColor(a.status)}18`,padding:'3px 8px',borderRadius:100,whiteSpace:'nowrap'}}>{a.status}</span>
+            </div>
+            <div className="adm-user-cell">
+              <div className="adm-avatar">{a.user_avatar||'👤'}</div>
+              <div><div className="adm-uname">{a.user_name}</div><div className="adm-uemail">{a.user_email}</div></div>
+            </div>
+            <div style={{fontSize:11,color:'#a0a0b0'}}>Created {fmtDay(a.created_at)}</div>
+            <div style={{marginTop:'auto',paddingTop:8,borderTop:'1px solid #f0f0f6'}}>
+              {a.github_repo_url ? (
+                <a href={a.github_repo_url} target="_blank" rel="noopener noreferrer"
+                  className="adm-act-btn adm-act-view" style={{display:'inline-block',textDecoration:'none'}}>
+                  GitHub ↗
+                </a>
+              ) : a.status==='ready' ? (
+                <button className="adm-act-btn adm-act-promote" disabled={pushingGit===a.id} onClick={()=>pushAppToGithub(a)}>
+                  {pushingGit===a.id ? 'Pushing...' : '⬆ Push to GitHub'}
+                </button>
+              ) : (
+                <span style={{fontSize:11,color:'#c0c0cc',fontWeight:600}}>Not ready yet</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
           {/* ═══ ANALYTICS ═══ */}
           {tab==='analytics'&&views&&(
             <div className="adm-content">

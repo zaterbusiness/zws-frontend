@@ -5,14 +5,17 @@ import zaterLogo from '../assets/zater-logo.jpeg'
 
 export default function Login() {
   const navigate               = useNavigate()
-  const { login, loginWithGoogle } = useAuth()
+  const { login, loginWithGoogle, sendOTP, loginWithOTP } = useAuth()
   const [email,    setEmail]   = useState('')
   const [password, setPassword]= useState('')
   const [showPw,   setShowPw]  = useState(false)
   const [loading,  setLoading] = useState(false)
   const [gLoading, setGLoading]= useState(false)
   const [error,    setError]   = useState('')
-
+const [mode,     setMode]     = useState('password') // 'password' | 'otp'
+  const [otp,      setOtp]      = useState('')
+  const [otpSent,  setOtpSent]  = useState(false)
+  const [otpLoading, setOtpLoading] = useState(false)
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   const hasGoogle = !!(clientId && !clientId.includes('your_google'))
 
@@ -56,7 +59,25 @@ export default function Login() {
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
+const handleSendOTP = async (e) => {
+    e.preventDefault()
+    setOtpLoading(true); setError('')
+    try {
+      await sendOTP(email.trim())
+      setOtpSent(true)
+    } catch (err) { setError(err.message) }
+    finally { setOtpLoading(false) }
+  }
 
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault()
+    setOtpLoading(true); setError('')
+    try {
+      await loginWithOTP(email.trim(), otp.trim())
+      navigate('/')
+    } catch (err) { setError(err.message) }
+    finally { setOtpLoading(false) }
+  }
   return (
     <>
       <style>{CSS}</style>
@@ -84,34 +105,76 @@ export default function Login() {
                 )}
               </div>
               <div className="auth-divider"><span>or sign in with email</span></div>
+                        {/* ── Continue with Email (toggle) ── */}
+          {mode === 'password' && (
+            <button
+              type="button"
+              className="auth-email-btn"
+              onClick={() => { setMode('otp'); setError('') }}
+            >
+              <span className="auth-email-icon">✉️</span> Continue with Email
+            </button>
+          )}
             </>
           )}
 
           {/* ── Email / Password ── */}
-          <form onSubmit={handleSubmit} className="auth-form">
-            <div className="auth-field">
-              <label className="auth-label">Email address</label>
-              <input className="auth-input" type="email" placeholder="you@example.com"
-                value={email} onChange={e => setEmail(e.target.value)} required autoFocus/>
-            </div>
-            <div className="auth-field">
-              <div className="auth-pw-header">
-                <label className="auth-label">Password</label>
-                <Link to="/forgot-password" className="auth-forgot">Forgot password?</Link>
+          {mode === 'password' ? (
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="auth-field">
+                <label className="auth-label">Email address</label>
+                <input className="auth-input" type="email" placeholder="you@example.com"
+                  value={email} onChange={e => setEmail(e.target.value)} required autoFocus/>
               </div>
-              <div className="auth-pw-wrap">
-                <input className="auth-input auth-pw-input"
-                  type={showPw?'text':'password'} placeholder="Your password"
-                  value={password} onChange={e => setPassword(e.target.value)} required/>
-                <button type="button" className="auth-pw-eye" onClick={() => setShowPw(o=>!o)}>
-                  {showPw?'🙈':'👁️'}
+              <div className="auth-field">
+                <div className="auth-pw-header">
+                  <label className="auth-label">Password</label>
+                  <Link to="/forgot-password" className="auth-forgot">Forgot password?</Link>
+                </div>
+                <div className="auth-pw-wrap">
+                  <input className="auth-input auth-pw-input"
+                    type={showPw?'text':'password'} placeholder="Your password"
+                    value={password} onChange={e => setPassword(e.target.value)} required/>
+                  <button type="button" className="auth-pw-eye" onClick={() => setShowPw(o=>!o)}>
+                    {showPw?'🙈':'👁️'}
+                  </button>
+                </div>
+              </div>
+              <button className="auth-btn" type="submit" disabled={loading||!email||!password}>
+                {loading ? <><Spin/> Signing in...</> : 'Sign In →'}
+              </button>
+             
+            </form>
+          ) : (
+            <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP} className="auth-form">
+              <div className="auth-field">
+                <label className="auth-label">Email address</label>
+                <input className="auth-input" type="email" placeholder="you@example.com"
+                  value={email} onChange={e => setEmail(e.target.value)} required autoFocus
+                  disabled={otpSent}/>
+              </div>
+              {otpSent && (
+                <div className="auth-field">
+                  <label className="auth-label">6-digit code</label>
+                  <input className="auth-input" type="text" inputMode="numeric" maxLength={6}
+                    placeholder="000000" value={otp}
+                    onChange={e => setOtp(e.target.value.replace(/\D/g,''))} required autoFocus/>
+                </div>
+              )}
+              <button className="auth-btn" type="submit"
+                disabled={otpLoading || !email || (otpSent && otp.length!==6)}>
+                {otpLoading
+                  ? <><Spin/> {otpSent ? 'Verifying...' : 'Sending code...'}</>
+                  : (otpSent ? 'Verify & Sign In →' : 'Send Code →')}
+              </button>
+              <p className="auth-switch" style={{marginTop:4}}>
+                <button type="button" className="auth-link" style={{background:'none',border:'none',cursor:'pointer',fontSize:13}}
+                  onClick={() => { setMode('password'); setOtpSent(false); setOtp(''); setError('') }}>
+                  {otpSent ? 'Use a different email' : 'Sign in with password instead'}
                 </button>
-              </div>
-            </div>
-            <button className="auth-btn" type="submit" disabled={loading||!email||!password}>
-              {loading ? <><Spin/> Signing in...</> : 'Sign In →'}
-            </button>
-          </form>
+              </p>
+            </form>
+          )}
 
           <div className="auth-divider"><span>or</span></div>
           <p className="auth-switch">
@@ -142,6 +205,9 @@ const CSS = `
 .auth-sub{font-size:14px;color:#72727f;font-weight:500;text-align:center;margin-bottom:24px;}
 .auth-error{background:rgba(239,68,68,0.07);border:1.5px solid rgba(239,68,68,0.2);border-radius:10px;padding:11px 14px;font-size:13px;color:#dc2626;font-weight:600;margin-bottom:18px;line-height:1.5;}
 .auth-google-box{width:100%;margin-bottom:4px;min-height:44px;}
+.auth-email-btn{width:100%;padding:11px 14px;border:1.5px solid #e2e2ea;border-radius:10px;background:#fff;color:#0a0a12;font-size:14px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;transition:all .18s;}
+.auth-email-btn:hover{border-color:#c0392b;background:rgba(192,57,43,0.04);}
+.auth-email-icon{font-size:15px;}
 .auth-g-loading{display:flex;align-items:center;gap:8px;font-size:13px;color:#72727f;font-weight:600;padding:8px 0;justify-content:center;}
 .auth-form{display:flex;flex-direction:column;gap:16px;}
 .auth-field{display:flex;flex-direction:column;}

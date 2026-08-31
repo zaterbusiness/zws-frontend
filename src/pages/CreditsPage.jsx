@@ -45,18 +45,35 @@ export default function CreditsPage() {
 
   // ── PhonePe: create order, then redirect the whole page to PhonePe's pay page.
   // No modal, no client-side signature — verification happens on the callback page.
- const startCashfreePayment = async ({ orderEndpoint, orderBody, setbuying }) => {
+ const startRazorpayPayment = async ({ orderEndpoint, orderBody, setbuying, onVerified }) => {
   setError(''); setSuccess(''); setbuying(true)
   try {
     const order = await api.post(orderEndpoint, orderBody)
-    if (!order?.paymentSessionId) throw new Error('No payment session returned from server.')
-    sessionStorage.setItem('zws_pending_txn', order.merchantTransactionId)
 
-    const cashfree = await window.Cashfree({ mode: 'sandbox' })
-    cashfree.checkout({
-      paymentSessionId: order.paymentSessionId,
-      redirectTarget: '_self', // navigates in the same tab, like PhonePe did
+    const rzp = new window.Razorpay({
+      key: order.razorpayKeyId,
+      order_id: order.razorpayOrderId,
+      amount: order.amount,
+      currency: 'INR',
+      name: 'Zater Web Studio',
+      handler: async (response) => {
+        try {
+          const result = await api.post('/credits/verify', {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          })
+          onVerified(result)
+        } catch {
+          setError('Verification failed. Contact support.')
+        } finally {
+          setbuying(false)
+        }
+      },
+      modal: { ondismiss: () => setbuying(false) },
+      theme: { color: '#c0392b' },
     })
+    rzp.open()
   } catch (err) {
     setError(err.message || 'Failed to start payment.')
     setbuying(false)
@@ -64,35 +81,46 @@ export default function CreditsPage() {
 }
 
   // ── Flow 1: Unlock download & hosting ─────────────────────
- const handleUnlock = () => startCashfreePayment({ orderEndpoint: '/credits/unlock/order', setbuying: setBuyingU })
+ const handleUnlock = () => startRazorpayPayment({
+  orderEndpoint: '/credits/unlock/order',
+  setbuying: setBuyingU,
+  onVerified: (result) => {
+    if (result.status === 'paid') {
+      setHasPaid(true)
+      setSuccess('🔓 Download & Hosting unlocked forever!')
+      if (setUser) setUser(u => ({ ...u, has_paid: true }))
+      fetchCredits()
+    } else {
+      setError(result.message || 'Payment was not completed.')
+    }
+  },
+})
+
+const handleBuyCredits = (planKey = selectedPack) => {
+  const pack = PACKS.find(p => p.key === planKey) || PACKS[0]
+  startRazorpayPayment({
+    orderEndpoint: '/credits/purchase/order',
+    orderBody: { plan: pack.key },
+    setbuying: setBuyingC,
+    onVerified: (result) => {
+      if (result.status === 'paid') {
+        setCredits(result.newBalance)
+        setSuccess(`✅ ${result.creditsAdded} credits added! New balance: ${result.newBalance}`)
+        if (setUser) setUser(u => ({ ...u, credits: result.newBalance }))
+        fetchCredits()
+      } else {
+        setError(result.message || 'Payment was not completed.')
+      }
+    },
+  })
+}
 
   // ── Flow 2: Buy credits (requires unlock first) ────────────
-  const handleBuyCredits = (planKey = selectedPack) => {
-  const pack = PACKS.find(p => p.key === planKey) || PACKS[0]
-  startCashfreePayment({ orderEndpoint: '/credits/purchase/order', orderBody: { plan: pack.key }, setbuying: setBuyingC })
-}
+
 
   // ── If we land back on /credits with a pending txn still in sessionStorage
   // (e.g. user navigated here directly instead of via /payment/callback), reconcile it.
-  useEffect(() => {
-    const pendingTxn = sessionStorage.getItem('zws_pending_txn')
-    if (!pendingTxn) return
-    api.get(`/credits/status/${pendingTxn}`)
-      .then(result => {
-        sessionStorage.removeItem('zws_pending_txn')
-        if (result.status === 'paid') {
-          if (result.has_paid !== undefined) setHasPaid(result.has_paid)
-          if (result.newBalance !== undefined) setCredits(result.newBalance)
-          if (result.creditsAdded) setSuccess(`✅ ${result.creditsAdded} credits added! New balance: ${result.newBalance}`)
-          else setSuccess('🔓 Download & Hosting unlocked forever!')
-          if (setUser) setUser(u => ({ ...u, has_paid: result.has_paid ?? u.has_paid, credits: result.newBalance ?? u.credits }))
-          fetchCredits()
-        } else if (result.status === 'failed') {
-          setError(result.message || 'Payment was not completed.')
-        }
-      })
-      .catch(() => sessionStorage.removeItem('zws_pending_txn'))
-  }, [])
+
 
   const creditColor = credits >= CREDITS_PER_GENERATION ? '#15803d' : credits > 0 ? '#d97706' : '#dc2626'
   const creditBg    = credits >= CREDITS_PER_GENERATION ? 'rgba(34,197,94,0.08)' : credits > 0 ? 'rgba(245,158,11,0.08)' : 'rgba(239,68,68,0.08)'
@@ -132,22 +160,29 @@ export default function CreditsPage() {
       : '❌ No credits — buy more to generate a website or app'}
   </div>
 
-  <div className="cp-pack-picker">
-    {PACKS.map(p => (
+<div className="cp-pack-picker">
+  {PACKS.map(p => {
+    const perCredit = (p.price / p.credits).toFixed(2)
+    const isBest = p.key === 'pack200'
+    return (
       <button
         key={p.key}
-        className={`cp-pack-option ${selectedPack === p.key ? 'active' : ''}`}
+        className={`cp-pack-option ${selectedPack === p.key ? 'active' : ''} ${isBest ? 'best' : ''}`}
         onClick={() => setSelectedPack(p.key)}
       >
-        <span className="cp-pack-credits">{p.credits} Credits</span>
+        {isBest && <span className="cp-pack-badge">BEST VALUE</span>}
+        <span className="cp-pack-credits">⚡ {p.credits}</span>
         <span className="cp-pack-price">₹{p.price}</span>
+        <span className="cp-pack-per">₹{perCredit}/credit</span>
+        <span className="cp-pack-check">✓</span>
       </button>
-    ))}
-  </div>
+    )
+  })}
+</div>
 
   <button className="cp-buy-btn" onClick={() => handleBuyCredits()} disabled={buyingC}>
     {buyingC
-      ? <><Spin /> Redirecting to cashfree...</>
+      ? <><Spin /> Redirecting to Razorpay...</>
       : <>💳 Buy {PACKS.find(p => p.key === selectedPack)?.credits} Credits — ₹{PACKS.find(p => p.key === selectedPack)?.price}</>}
   </button>
 </div>
@@ -170,7 +205,7 @@ export default function CreditsPage() {
             </div>
             {!hasPaid && (
               <button className="cp-unlock-btn" onClick={handleUnlock} disabled={buyingU}>
-               {buyingU ? <><Spin /> Redirecting to Cashfree...</> : '🔓 Pay ₹99 to Unlock'}
+               {buyingU ? <><Spin /> Redirecting to Razorpay...</> : '🔓 Pay ₹99 to Unlock'}
               </button>
             )}
           </div>
@@ -275,7 +310,7 @@ export default function CreditsPage() {
                 <div className="cp-buy-credits-label">= {CREDITS_PER_PACK} Credits</div>
                 <button className="cp-buy-btn" onClick={() => handleBuyCredits()} disabled={buyingC}>
                   {buyingC
-                    ? <><Spin /> Redirecting to cashfree</>
+                    ? <><Spin /> Redirecting to Razorpay</>
                     : <>💳 Buy {CREDITS_PER_PACK} Credits — ₹{PRICE_PER_PACK}</>}
                 </button>
                 <div className="cp-buy-note">🔒 Secured by Cashfree · UPI · Cards · Net Banking</div>
@@ -382,12 +417,76 @@ const CSS = `
 .cp-unlock-btn:disabled{background:#9a9aaa;cursor:not-allowed;}
 
 
-.cp-pack-picker{display:flex;gap:10px;margin:14px 0;justify-content:center;flex-wrap:wrap;}
-.cp-pack-option{padding:10px 18px;border-radius:12px;border:1.5px solid #e2e2ea;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s;font-family:'Nunito',sans-serif;}
-.cp-pack-option.active{border-color:#c0392b;background:rgba(192,57,43,0.06);}
-.cp-pack-credits{font-size:13px;font-weight:800;color:#0a0a12;}
-.cp-pack-price{font-size:12px;font-weight:700;color:#c0392b;}
+.cp-pack-picker{display:flex;gap:14px;margin:18px 0;justify-content:center;flex-wrap:wrap;}
 
+.cp-pack-option{
+  position:relative;
+  padding:16px 26px 14px;
+  border-radius:16px;
+  border:2px solid #e2e2ea;
+  background:#fff;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  font-family:'Nunito',sans-serif;
+  transition:all .2s cubic-bezier(.4,0,.2,1);
+  min-width:130px;
+  overflow:visible;
+}
+.cp-pack-option:hover{
+  border-color:#c0392b;
+  transform:translateY(-3px);
+  box-shadow:0 8px 20px rgba(192,57,43,0.12);
+}
+.cp-pack-option.active{
+  border-color:#c0392b;
+  background:linear-gradient(180deg,rgba(192,57,43,0.07),rgba(192,57,43,0.02));
+  box-shadow:0 6px 18px rgba(192,57,43,0.18);
+  transform:translateY(-3px);
+}
+.cp-pack-option.best{border-color:#d97706;}
+.cp-pack-option.best.active{
+  border-color:#c0392b;
+}
+
+.cp-pack-badge{
+  position:absolute;
+  top:-11px;
+  left:50%;
+  transform:translateX(-50%);
+  background:linear-gradient(135deg,#d97706,#c0392b);
+  color:#fff;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.6px;
+  padding:3px 10px;
+  border-radius:100px;
+  box-shadow:0 3px 8px rgba(192,57,43,0.35);
+  white-space:nowrap;
+}
+
+.cp-pack-credits{font-size:16px;font-weight:800;color:#0a0a12;margin-top:4px;}
+.cp-pack-price{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#c0392b;line-height:1.1;}
+.cp-pack-per{font-size:10px;font-weight:600;color:#a0a0b0;}
+
+.cp-pack-check{
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:16px;height:16px;
+  border-radius:50%;
+  background:#c0392b;
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;
+  transform:scale(.5);
+  transition:all .2s;
+}
+.cp-pack-option.active .cp-pack-check{opacity:1;transform:scale(1);}
 
 /* How it works */
 .cp-how-card{background:#fff;border:1.5px solid #e2e2ea;border-radius:18px;padding:24px;animation:fadeUp .4s .1s ease both;}
