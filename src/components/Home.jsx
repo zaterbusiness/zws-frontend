@@ -8,7 +8,6 @@ import TemplateGallery from './TemplateGallery'
 import zaterLogo from '../assets/zater-logo.jpeg'
 import WelcomeCreditsPopup from './WelcomeCreditsPopup'
 import NavCreditsBadge from './NavCreditsBadge'
-import startupVideo from '../assets/hailuo-2_3_create_a_video_.Visual_Restaurant_owner_sitting_with_phone_looking_confused._Res-0.mp4'
 
 const EXAMPLES = [
   'Restaurant landing page with menu & reservations',
@@ -596,24 +595,6 @@ const removeLogo = () => {
       <style>{CSS}</style>
       <div className="h-root">
         <div className="h-dotgrid" />
-        {recentLoading && (
-  <div className="startup-loader">
-    <video
-      className="startup-loader-video"
-      src={startupVideo}
-      autoPlay
-      muted
-      loop
-      playsInline
-    />
-    <div className="startup-loader-scrim" />
-    <div className="startup-loader-content">
-      <img src={zaterLogo} alt="Zater" className="startup-loader-logo" />
-      <div className="startup-loader-spinner" />
-      <div className="startup-loader-text">Loading your workspace…</div>
-    </div>
-  </div>
-)}
 <canvas id="zws-bg-canvas" />
 
         {/* ══ NAVBAR ══ */}
@@ -1868,13 +1849,7 @@ const CSS = `
 .apt-free-dl-btn:hover{background:rgba(34,197,94,0.2);transform:translateY(-1px);}
 .apt-free-host-btn{padding:10px 0;border-radius:9px;background:rgba(91,79,255,0.08);border:1.5px solid rgba(91,79,255,0.25);color:#5b4fff;font-size:12px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .18s;}
 .apt-free-host-btn:hover{background:rgba(91,79,255,0.15);transform:translateY(-1px);}
-.startup-loader{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0a0a12;}
-.startup-loader-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.startup-loader-scrim{position:absolute;inset:0;background:rgba(10,10,18,0.55);}
-.startup-loader-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;}
-.startup-loader-logo{width:56px;height:56px;border-radius:14px;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
-.startup-loader-spinner{width:30px;height:30px;border:3px solid rgba(255,255,255,0.25);border-top-color:#c0392b;border-radius:50%;animation:spin 0.8s linear infinite;}
-.startup-loader-text{font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:#e8e8f0;letter-spacing:0.3px;}
+
 /* ══ APP TEMPLATE MODAL ══ */
 @keyframes aptModalIn{from{opacity:0;transform:translateY(20px) scale(0.97)}to{opacity:1;transform:none}}
 .apt-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;}
