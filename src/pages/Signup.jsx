@@ -57,43 +57,24 @@ const COUNTRIES = [
   { code: '+51',  flag: '🇵🇪', name: 'Peru',           short: 'PE' },
 ]
 
-// ── Password rules ────────────────────────────────────────────
-const RULES = [
-  { id: 'length',  label: 'At least 8 characters',        test: (p) => p.length >= 8 },
-  { id: 'upper',   label: 'One uppercase letter (A-Z)',    test: (p) => /[A-Z]/.test(p) },
-  { id: 'lower',   label: 'One lowercase letter (a-z)',    test: (p) => /[a-z]/.test(p) },
-  { id: 'number',  label: 'One number (0-9)',              test: (p) => /[0-9]/.test(p) },
-  { id: 'special', label: 'One special character (!@#$…)', test: (p) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(p) },
-]
-
-const getStrength = (password) => {
-  const passed = RULES.filter(r => r.test(password)).length
-  if (passed === 0) return { level: 0, label: '',        color: '#e2e2ea' }
-  if (passed <= 2)  return { level: 1, label: 'Weak',   color: '#ef4444' }
-  if (passed <= 3)  return { level: 2, label: 'Fair',   color: '#f59e0b' }
-  if (passed === 4) return { level: 3, label: 'Good',   color: '#3b82f6' }
-  return              { level: 4, label: 'Strong', color: '#22c55e' }
-}
-
 export default function Signup() {
-  const navigate         = useNavigate()
-  const { signup, loginWithGoogle } = useAuth()
-  const dropRef          = useRef(null)
+  const navigate = useNavigate()
+  const { loginWithGoogle, sendOTP, loginWithOTP } = useAuth()
+  const dropRef = useRef(null)
 
-  const [name,        setName]        = useState('')
-  const [email,       setEmail]       = useState('')
-  const [phone,       setPhone]       = useState('')
-  const [selCountry,  setSelCountry]  = useState(COUNTRIES[0]) // India default
-  const [ccOpen,      setCcOpen]      = useState(false)
-  const [ccSearch,    setCcSearch]    = useState('')
-  const [password,    setPassword]    = useState('')
-  const [confirm,     setConfirm]     = useState('')
-  const [showPw,      setShowPw]      = useState(false)
-  const [showCf,      setShowCf]      = useState(false)
-  const [loading,     setLoading]     = useState(false)
-  const [gLoading,    setGLoading]    = useState(false)
-  const [error,       setError]       = useState('')
-  const [focused,     setFocused]     = useState(false)
+  const [name,       setName]       = useState('')
+  const [email,      setEmail]      = useState('')
+  const [phone,      setPhone]      = useState('')
+  const [selCountry, setSelCountry] = useState(COUNTRIES[0]) // India default
+  const [ccOpen,     setCcOpen]     = useState(false)
+  const [ccSearch,   setCcSearch]   = useState('')
+  const [loading,    setLoading]    = useState(false)
+  const [gLoading,   setGLoading]   = useState(false)
+  const [error,      setError]      = useState('')
+
+  const [step,     setStep]     = useState('details')  // 'details' | 'otp'
+  const [otp,      setOtp]      = useState('')
+  const [otpTimer, setOtpTimer] = useState(0)
 
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   const hasGoogle = !!(clientId && !clientId.includes('your_google'))
@@ -119,6 +100,13 @@ export default function Signup() {
     return () => { try { document.head.removeChild(script) } catch {} }
   }, [])
 
+  // OTP resend countdown
+  useEffect(() => {
+    if (otpTimer <= 0) return
+    const t = setInterval(() => setOtpTimer(s => s - 1), 1000)
+    return () => clearInterval(t)
+  }, [otpTimer])
+
   const handleGoogleResponse = async (response) => {
     setGLoading(true); setError('')
     try {
@@ -127,10 +115,6 @@ export default function Signup() {
     } catch (err) { setError(err.message) }
     finally { setGLoading(false) }
   }
-
-  const strength  = getStrength(password)
-  const allPassed = RULES.every(r => r.test(password))
-  const pwMatch   = password && confirm && password === confirm
 
   // Filtered country list
   const filteredCountries = COUNTRIES.filter(c =>
@@ -146,21 +130,39 @@ export default function Signup() {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const handleSubmit = async (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault()
-    if (!allPassed) { setError('Please meet all password requirements.'); return }
-    if (password !== confirm) { setError('Passwords do not match.'); return }
+    if (!name.trim() || !email.trim()) { setError('Name and email are required.'); return }
     if (phone && !/^\d{6,15}$/.test(phone.replace(/\s/g, ''))) {
       setError('Please enter a valid phone number (6-15 digits).'); return
     }
     setLoading(true); setError('')
     try {
+      await sendOTP(email.trim())
+      setStep('otp')
+      setOtpTimer(30)
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false) }
+  }
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault()
+    if (!otp.trim() || otp.trim().length !== 6) { setError('Enter the 6-digit code.'); return }
+    setLoading(true); setError('')
+    try {
       const fullPhone = phone ? `${selCountry.code}${phone.trim()}` : ''
-      await signup(name.trim(), email.trim(), password, fullPhone)
+      await loginWithOTP(email.trim(), otp.trim(), name.trim(), fullPhone)
       navigate('/')
-    } catch (err) {
-      setError(err.message)
-    } finally { setLoading(false) }
+    } catch (err) { setError(err.message) }
+    finally { setLoading(false) }
+  }
+
+  const handleResend = async () => {
+    if (otpTimer > 0) return
+    setLoading(true); setError('')
+    try { await sendOTP(email.trim()); setOtpTimer(30) }
+    catch (err) { setError(err.message) }
+    finally { setLoading(false) }
   }
 
   return (
@@ -202,182 +204,154 @@ export default function Signup() {
 
           <div className="auth-divider"><span>or create account with email</span></div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
-
-            {/* Name */}
-            <div className="auth-field">
-              <label className="auth-label">Full Name</label>
-              <input
-                className="auth-input"
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required autoFocus
-              />
-            </div>
-
-            {/* Email */}
-            <div className="auth-field">
-              <label className="auth-label">Email Address</label>
-              <input
-                className="auth-input"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* Phone + Country Code */}
-            <div className="auth-field">
-              <label className="auth-label">
-                Phone Number
-                <span className="auth-label-opt">optional</span>
-              </label>
-              <div className="auth-phone-row">
-
-                {/* Country code dropdown */}
-                <div className="auth-cc-wrap" ref={dropRef}>
-                  <button
-                    type="button"
-                    className="auth-cc-btn"
-                    onClick={() => { setCcOpen(o => !o); setCcSearch('') }}
-                  >
-                    <span className="auth-cc-flag">{selCountry.flag}</span>
-                    <span className="auth-cc-code">{selCountry.code}</span>
-                    <span className="auth-cc-arrow">{ccOpen ? '▲' : '▼'}</span>
-                  </button>
-
-                  {ccOpen && (
-                    <div className="auth-cc-dropdown">
-                      <div className="auth-cc-search-wrap">
-                        <input
-                          className="auth-cc-search"
-                          placeholder="Search country..."
-                          value={ccSearch}
-                          onChange={e => setCcSearch(e.target.value)}
-                          autoFocus
-                        />
-                      </div>
-                      <div className="auth-cc-list">
-                        {filteredCountries.length === 0 ? (
-                          <div className="auth-cc-no-result">No country found</div>
-                        ) : filteredCountries.map((c, i) => (
-                          <button
-                            key={`${c.short}-${i}`}
-                            type="button"
-                            className={`auth-cc-item ${selCountry.short === c.short && selCountry.code === c.code ? 'auth-cc-selected' : ''}`}
-                            onClick={() => { setSelCountry(c); setCcOpen(false); setCcSearch('') }}
-                          >
-                            <span className="auth-cc-item-flag">{c.flag}</span>
-                            <span className="auth-cc-item-name">{c.name}</span>
-                            <span className="auth-cc-item-code">{c.code}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Phone number input */}
+          {step === 'details' && (
+            <form onSubmit={handleSendOtp} className="auth-form">
+              {/* Name */}
+              <div className="auth-field">
+                <label className="auth-label">Full Name</label>
                 <input
-                  className="auth-input auth-phone-input"
-                  type="tel"
-                  placeholder="9876543210"
-                  value={phone}
-                  onChange={e => setPhone(e.target.value.replace(/[^0-9\s]/g, ''))}
-                  maxLength={15}
+                  className="auth-input"
+                  type="text"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required autoFocus
                 />
               </div>
-              {phone && (
-                <div className="auth-phone-preview">
-                  Full number: <strong>{selCountry.code}{phone}</strong>
-                </div>
-              )}
-            </div>
 
-            {/* Password */}
-            <div className="auth-field">
-              <label className="auth-label">Password</label>
-              <div className="auth-pw-wrap">
+              {/* Email */}
+              <div className="auth-field">
+                <label className="auth-label">Email Address</label>
                 <input
-                  className="auth-input auth-pw-input"
-                  type={showPw ? 'text' : 'password'}
-                  placeholder="Create a strong password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  onFocus={() => setFocused(true)}
+                  className="auth-input"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                   required
                 />
-                <button type="button" className="auth-pw-toggle" onClick={() => setShowPw(o => !o)}>
-                  {showPw ? '🙈' : '👁️'}
-                </button>
               </div>
 
-              {/* Strength bar */}
-              {password && (
-                <div className="auth-strength-wrap">
-                  <div className="auth-strength-bar">
-                    {[1,2,3,4].map(i => (
-                      <div key={i} className="auth-strength-seg"
-                        style={{background: i <= strength.level ? strength.color : '#e2e2ea'}}
-                      />
-                    ))}
+              {/* Phone + Country Code */}
+              <div className="auth-field">
+                <label className="auth-label">
+                  Phone Number
+                  <span className="auth-label-opt">optional</span>
+                </label>
+                <div className="auth-phone-row">
+
+                  {/* Country code dropdown */}
+                  <div className="auth-cc-wrap" ref={dropRef}>
+                    <button
+                      type="button"
+                      className="auth-cc-btn"
+                      onClick={() => { setCcOpen(o => !o); setCcSearch('') }}
+                    >
+                      <span className="auth-cc-flag">{selCountry.flag}</span>
+                      <span className="auth-cc-code">{selCountry.code}</span>
+                      <span className="auth-cc-arrow">{ccOpen ? '▲' : '▼'}</span>
+                    </button>
+
+                    {ccOpen && (
+                      <div className="auth-cc-dropdown">
+                        <div className="auth-cc-search-wrap">
+                          <input
+                            className="auth-cc-search"
+                            placeholder="Search country..."
+                            value={ccSearch}
+                            onChange={e => setCcSearch(e.target.value)}
+                            autoFocus
+                          />
+                        </div>
+                        <div className="auth-cc-list">
+                          {filteredCountries.length === 0 ? (
+                            <div className="auth-cc-no-result">No country found</div>
+                          ) : filteredCountries.map((c, i) => (
+                            <button
+                              key={`${c.short}-${i}`}
+                              type="button"
+                              className={`auth-cc-item ${selCountry.short === c.short && selCountry.code === c.code ? 'auth-cc-selected' : ''}`}
+                              onClick={() => { setSelCountry(c); setCcOpen(false); setCcSearch('') }}
+                            >
+                              <span className="auth-cc-item-flag">{c.flag}</span>
+                              <span className="auth-cc-item-name">{c.name}</span>
+                              <span className="auth-cc-item-code">{c.code}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {strength.label && (
-                    <span className="auth-strength-label" style={{color: strength.color}}>
-                      {strength.label}
-                    </span>
-                  )}
-                </div>
-              )}
 
-              {/* Rules checklist */}
-              {(focused || password) && (
-                <div className="auth-rules">
-                  {RULES.map(rule => {
-                    const passed = rule.test(password)
-                    return (
-                      <div key={rule.id} className={`auth-rule ${passed ? 'auth-rule-pass' : 'auth-rule-fail'}`}>
-                        <span className="auth-rule-icon">{passed ? '✅' : '○'}</span>
-                        <span>{rule.label}</span>
-                      </div>
-                    )
-                  })}
+                  {/* Phone number input */}
+                  <input
+                    className="auth-input auth-phone-input"
+                    type="tel"
+                    placeholder="9876543210"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value.replace(/[^0-9\s]/g, ''))}
+                    maxLength={15}
+                  />
                 </div>
-              )}
-            </div>
+                {phone && (
+                  <div className="auth-phone-preview">
+                    Full number: <strong>{selCountry.code}{phone}</strong>
+                  </div>
+                )}
+              </div>
 
-            {/* Confirm Password */}
-            <div className="auth-field">
-              <label className="auth-label">Confirm Password</label>
-              <div className="auth-pw-wrap">
+              <button
+                className="auth-btn"
+                type="submit"
+                disabled={loading || !name || !email}
+              >
+                {loading ? <><Spin/> Sending code...</> : 'Send OTP →'}
+              </button>
+            </form>
+          )}
+
+          {step === 'otp' && (
+            <form onSubmit={handleVerifyOtp} className="auth-form">
+              <p style={{fontSize:13, color:'#72727f', textAlign:'center', marginBottom:4}}>
+                We sent a 6-digit code to <strong>{email}</strong>
+              </p>
+              <div className="auth-field">
+                <label className="auth-label">Enter OTP</label>
                 <input
-                  className={`auth-input auth-pw-input ${confirm && !pwMatch ? 'auth-input-error' : confirm && pwMatch ? 'auth-input-success' : ''}`}
-                  type={showCf ? 'text' : 'password'}
-                  placeholder="Repeat your password"
-                  value={confirm}
-                  onChange={e => setConfirm(e.target.value)}
+                  className="auth-input"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="123456"
+                  value={otp}
+                  onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
+                  autoFocus
                   required
                 />
-                <button type="button" className="auth-pw-toggle" onClick={() => setShowCf(o => !o)}>
-                  {showCf ? '🙈' : '👁️'}
-                </button>
               </div>
-              {confirm && !pwMatch && <p className="auth-match-err">Passwords do not match</p>}
-              {confirm && pwMatch  && <p className="auth-match-ok">✅ Passwords match</p>}
-            </div>
 
-            <button
-              className="auth-btn"
-              type="submit"
-              disabled={loading || !name || !email || !allPassed || !pwMatch}
-            >
-              {loading ? <><Spin/> Creating account...</> : 'Create Account →'}
-            </button>
-          </form>
+              <button className="auth-btn" type="submit" disabled={loading || otp.length !== 6}>
+                {loading ? <><Spin/> Verifying...</> : 'Verify & Create Account →'}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={otpTimer > 0 || loading}
+                style={{background:'none', border:'none', color: otpTimer > 0 ? '#c0c0cc' : '#c0392b', fontSize:13, fontWeight:700, cursor: otpTimer > 0 ? 'default' : 'pointer', marginTop:8}}
+              >
+                {otpTimer > 0 ? `Resend code in ${otpTimer}s` : 'Resend code'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setStep('details'); setOtp('') }}
+                style={{background:'none', border:'none', color:'#72727f', fontSize:12, fontWeight:600, cursor:'pointer', marginTop:4}}
+              >
+                ← Change email
+              </button>
+            </form>
+          )}
 
           <div className="auth-divider"><span>or</span></div>
 
@@ -457,25 +431,6 @@ const CSS = `
 
 /* PHONE PREVIEW */
 .auth-phone-preview{font-size:11px;color:#72727f;font-weight:600;margin-top:5px;}
-
-.auth-pw-wrap{position:relative;}
-.auth-pw-input{padding-right:44px !important;}
-.auth-pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;cursor:pointer;padding:4px;}
-
-/* STRENGTH */
-.auth-strength-wrap{display:flex;align-items:center;gap:10px;margin-top:8px;}
-.auth-strength-bar{display:flex;gap:4px;flex:1;}
-.auth-strength-seg{flex:1;height:4px;border-radius:100px;transition:background .3s;}
-.auth-strength-label{font-size:11px;font-weight:800;white-space:nowrap;}
-
-/* RULES */
-.auth-rules{display:flex;flex-direction:column;gap:5px;margin-top:10px;background:#fafafa;border:1px solid #f0f0f6;border-radius:10px;padding:12px 14px;}
-.auth-rule{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;transition:color .2s;}
-.auth-rule-pass{color:#16a34a;}
-.auth-rule-fail{color:#a0a0b0;}
-.auth-rule-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
-.auth-match-err{font-size:12px;color:#dc2626;font-weight:600;margin-top:5px;}
-.auth-match-ok{font-size:12px;color:#16a34a;font-weight:700;margin-top:5px;}
 
 .auth-btn{width:100%;padding:13px;border-radius:11px;background:#c0392b;border:none;color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 14px rgba(192,57,43,0.35);transition:all .18s;margin-top:4px;}
 .auth-btn:hover:not(:disabled){opacity:0.88;transform:translateY(-1px);}

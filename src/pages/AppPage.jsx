@@ -235,12 +235,26 @@ const checkStatus = async () => {
 
 
   if (loading) return <Loader />
-  if (error && !app) return (
-    <div style={S.center}>
-      <p style={{color:'#72727f',fontWeight:600}}>{error}</p>
-      <button style={S.outBtn} onClick={() => navigate('/apps')}>Back</button>
-    </div>
-  )
+if (error && !app) return (
+  <div style={S.center}>
+    <p style={{color:'#72727f',fontWeight:600}}>{error}</p>
+    <button style={S.outBtn} onClick={() => navigate('/apps')}>Back</button>
+  </div>
+)
+
+// 🚧 App generation is not live yet — show Coming Soon only, nothing else
+return (
+  <div style={S.center}>
+    <div style={{fontSize:52}}>🚧</div>
+    <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:24,fontWeight:800,color:'#0a0a12',textAlign:'center'}}>
+      App Generation — Coming Soon
+    </h2>
+    <p style={{color:'#72727f',fontWeight:500,fontSize:14,maxWidth:340,textAlign:'center',lineHeight:1.6}}>
+      Full-stack app generation is still in development. You'll be able to build, preview, download, and host apps here soon.
+    </p>
+    <button style={S.outBtn} onClick={() => navigate('/apps')}>← Back to Apps</button>
+  </div>
+)
 
 
 const handleRestartPreview = async () => {

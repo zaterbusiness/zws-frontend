@@ -691,95 +691,60 @@ const removeLogo = () => {
          
 
           {/* ══ PROMPT BOX ══ */}
-          <div className={`h-box ${mode === 'app' ? 'h-box-app' : ''}`}>
-            <div className="h-box-inner">
-              {/* Add right above the <textarea> */}
-
-              <textarea ref={textareaRef} className="h-textarea"
-                placeholder={mode === 'website'
-                  ? 'e.g. A modern landing page for a yoga studio with class schedule, instructor bios, and online booking...'
-                  : 'e.g. A task management app where users can create projects, add tasks with due dates, assign team members, and track progress...'}
-                value={prompt} onChange={handleInput} onKeyDown={handleKey} rows={4}/>
-            </div>
-            {error && (
-              <div className="h-box-error">
-                ⚠️ {error}
-                {error.includes('Insufficient credits') && (
-                  <button className="h-buy-credits-link" onClick={() => navigate('/credits')}>Buy Credits →</button>
-                )}
-              </div>
-              
-            )}
-            {clarifyQuestions && (
-  <div className="h-clarify-box">
-    <div className="h-clarify-title">Quick check before building — this saves your credits from a mismatched app:</div>
-    {clarifyQuestions.map(q => (
-      <div key={q.id} className="h-clarify-q">
-        <div className="h-clarify-q-text">{q.question}</div>
-        <div className="h-clarify-opts">
-          {q.options.map(opt => (
-            <button
-              key={opt}
-              className={`h-clarify-opt ${clarifyAnswers[q.id] === opt ? 'h-clarify-opt-selected' : ''}`}
-              onClick={() => setClarifyAnswers(a => ({ ...a, [q.id]: opt }))}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
+         {mode === 'app' ? (
+  <div className="h-box h-box-app h-box-coming-soon">
+    <div className="h-coming-soon-inner">
+      <div style={{fontSize:44}}>🚧</div>
+      <h3 className="h-coming-soon-title">App Generation — Coming Soon</h3>
+      <p className="h-coming-soon-sub">
+        Full-stack app generation is still in development. You'll be able to build, preview, download, and host apps here soon.
+      </p>
+      <button className="h-mode-btn" style={{background:'#fff',border:'1.5px solid #e2e2ea',color:'#0a0a12'}}
+        onClick={() => setMode('website')}>
+        ← Try Website Generation Instead
+      </button>
+    </div>
+  </div>
+) : (
+  <div className="h-box">
+    <div className="h-box-inner">
+      <textarea ref={textareaRef} className="h-textarea"
+        placeholder="e.g. A modern landing page for a yoga studio with class schedule, instructor bios, and online booking..."
+        value={prompt} onChange={handleInput} onKeyDown={handleKey} rows={4}/>
+    </div>
+    {error && (
+      <div className="h-box-error">
+        ⚠️ {error}
+        {error.includes('Insufficient credits') && (
+          <button className="h-buy-credits-link" onClick={() => navigate('/credits')}>Buy Credits →</button>
+        )}
       </div>
-    ))}
-    <button
-      className="h-generate-btn h-generate-btn-app"
-      disabled={Object.keys(clarifyAnswers).length < clarifyQuestions.length}
-      onClick={() => handleGenerate()}
-    >
-      Continue Building ⚛️
-    </button>
+    )}
+    <div className="h-box-divider" />
+    <div className="h-toolbar">
+      <div className="h-toolbar-left">
+        <button type="button" className="h-attach-btn" onClick={() => logoInputRef.current?.click()} title="Attach a logo to use in your site">
+          📎 {attachedLogo ? 'Logo attached' : 'Attach logo'}
+        </button>
+        <span className="h-model-tag">🤖 Claude Opus 4.8</span>
+        <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={handleLogoSelect} className="h-hidden-input" />
+        {attachedLogo && (
+          <div className="h-logo-chip">
+            <img src={attachedLogo.previewUrl} alt="logo preview" className="h-logo-chip-img" />
+            <span className="h-logo-chip-name">{attachedLogo.file.name}</span>
+            <button type="button" className="h-logo-chip-remove" onClick={removeLogo}>✕</button>
+          </div>
+        )}
+      </div>
+      <div className="h-toolbar-right">
+        <span className="h-hint">Ctrl+Enter</span>
+        <button className="h-generate-btn" onClick={() => handleGenerate()} disabled={loading || checkingClarity || !prompt.trim()}>
+          {loading ? <><Spin /> Generating...</> : checkingClarity ? <><Spin /> Checking your prompt...</> : <>Generate ⚡</>}
+        </button>
+      </div>
+    </div>
   </div>
 )}
-            <div className="h-box-divider" />
-            <div className="h-toolbar">
-             <div className="h-toolbar-left">
-                
-                <button
-                  type="button"
-                  className="h-attach-btn"
-                  onClick={() => logoInputRef.current?.click()}
-                  title="Attach a logo to use in your site"
-                >
-                  📎 {attachedLogo ? 'Logo attached' : 'Attach logo'}
-                </button>
-                <span className={`h-model-tag ${mode === 'app' ? 'h-model-tag-app' : ''}`}>
-                  🤖 Claude Opus 4.8
-                </span>
-                <input
-                  ref={logoInputRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={handleLogoSelect}
-                  className="h-hidden-input"
-                />
-                {attachedLogo && (
-                  <div className="h-logo-chip">
-                    <img src={attachedLogo.previewUrl} alt="logo preview" className="h-logo-chip-img" />
-                    <span className="h-logo-chip-name">{attachedLogo.file.name}</span>
-                    <button type="button" className="h-logo-chip-remove" onClick={removeLogo}>✕</button>
-                  </div>
-                )}
-              </div>
-              <div className="h-toolbar-right">
-                <span className="h-hint">Ctrl+Enter</span>
-                <button className={`h-generate-btn ${mode === 'app' ? 'h-generate-btn-app' : ''}`}
-                  onClick={() => handleGenerate()} disabled={loading || checkingClarity || !prompt.trim()}>
-                  {loading
-                    ? <><Spin /> {mode === 'app' ? 'Building App...' : 'Generating...'}</>
-                    : checkingClarity? <><Spin /> Checking your prompt...</>
-                    : mode === 'app' ? <>Build App ⚛️</> : <>Generate ⚡</>}
-                </button>
-              </div>
-            </div>
-          </div>
 
           {(user?.credits ?? 0) < 100 && (
             <div className="h-low-credits-banner">
@@ -1806,7 +1771,10 @@ const CSS = `
   .how-card{padding:26px 18px;}
   .apt-modal-actions{grid-template-columns:1fr;}
 }
-
+.h-box-coming-soon{border-color:rgba(91,79,255,0.25) !important;background:rgba(91,79,255,0.02);}
+.h-coming-soon-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:44px 28px;}
+.h-coming-soon-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:800;color:#0a0a12;}
+.h-coming-soon-sub{font-size:13px;color:#72727f;font-weight:500;line-height:1.6;max-width:420px;margin-bottom:6px;}
 /* ══ AD POPUP ══ */
 @keyframes adSlideUp{from{opacity:0;transform:translateY(30px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
 

@@ -54,8 +54,9 @@ export const AuthProvider = ({ children }) => {
   }
 
   // ── Email OTP: verify code + login ──────────────────────────
-  const loginWithOTP = async (email, otp) => {
-    const d = await api.post('/auth/verify-otp', { email, otp })
+  // ── Email OTP: verify code + login ──────────────────────────
+  const loginWithOTP = async (email, otp, name = '', phone = '') => {   // ← added name, phone params
+    const d = await api.post('/auth/verify-otp', { email, otp, name, phone })  // ← forward them
     api.setToken(d.token)
     setUser(d.user)
     return d.user
@@ -72,7 +73,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, loginWithGoogle, sendOTP, loginWithOTP, logout }}>
+    <AuthContext.Provider value={{ user, loading, setUser, login, signup, loginWithGoogle, sendOTP, loginWithOTP, logout }}>
       {children}
     </AuthContext.Provider>
   )

@@ -6,7 +6,7 @@ import api from '../utils/api'
 export default function ProjectPage() {
   const { id }    = useParams()
   const navigate  = useNavigate()
-  const { user }  = useAuth()
+  
   const iframeRef = useRef(null)
 
   const [project,     setProject]    = useState(null)
@@ -16,7 +16,7 @@ export default function ProjectPage() {
   const [error,       setError]      = useState('')
   const [polling,     setPolling]    = useState(false)
   const [isFullscreen,setFullscreen] = useState(false)
-
+const { user, setUser } = useAuth()   // add setUser
   // After-payment choice modal
   const [choiceOpen,  setChoiceOpen] = useState(false)
 
@@ -90,7 +90,43 @@ useEffect(() => {
     } catch (err) { setError(err.message) }
     finally { setRegenBusy(false) }
   }
+const [paying, setPaying] = useState(false)
 
+// ── Pay ₹99 to unlock download + hosting ──────────────────────
+const handlePay = async () => {
+  setPaying(true); setError('')
+  try {
+    const order = await api.post('/credits/unlock/order')   // was '/payments/order'
+    const rzp = new window.Razorpay({
+      key: order.razorpayKeyId,
+      order_id: order.razorpayOrderId,
+      amount: order.amount,
+      currency: order.currency,
+      name: 'Zater Web Studio',
+      description: 'Unlock download & hosting — all projects, forever',
+      handler: async (resp) => {
+        try {
+          const v = await api.post('/credits/verify', {   // was '/payments/verify'
+            razorpay_order_id: resp.razorpay_order_id,
+            razorpay_payment_id: resp.razorpay_payment_id,
+            razorpay_signature: resp.razorpay_signature,
+          })
+          if (v.status === 'paid') {
+            setSuccess('✅ Unlocked forever! Download & host any of your websites.')
+            if (setUser) setUser(u => ({ ...u, has_paid: true }))
+            fetchProject()
+          } else {
+            setError(v.message || 'Payment verification failed.')
+          }
+        } catch (err) { setError(err.message) }
+        finally { setPaying(false) }
+      },
+      modal: { ondismiss: () => setPaying(false) },
+      theme: { color: '#c0392b' },
+    })
+    rzp.open()
+  } catch (err) { setError(err.message); setPaying(false) }
+}
   // Delete
   const confirmDel = async () => {
     setDelLoading(true)
@@ -189,46 +225,52 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
       <div className={`pp-root ${isFullscreen ? 'pp-fullscreen' : ''}`}>
 
         {/* NAV */}
-        <nav className="pp-nav">
-          <button className="pp-back" onClick={() => navigate('/home')}>← Home</button>
-          <StatusBadge status={project?.status} polling={polling} />
-          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-            {isReady && (
-              <button className="pp-nb pp-nb-outline" onClick={() => setFullscreen(f => !f)}>
-                {isFullscreen ? '⊡ Exit Full' : '⛶ Full Screen'}
-              </button>
-            )}
-            <button className="pp-nb pp-nb-outline" onClick={() => { setEditTitle(project?.title || ''); setEditOpen(true) }}>✏️</button>
-            
-            <button className="pp-nb pp-nb-danger" onClick={() => setDelOpen(true)}>🗑️</button>
-            {isReady && isGithub && (
-              <a className="pp-nb pp-nb-green" href={project.github_url} target="_blank" rel="noopener noreferrer">
-                🌐 View Live ↗
-              </a>
-            )}
-            {isReady && isGithub && (
-  <a className="pp-nb pp-nb-outline" href={CUSTOM_DOMAIN_FORM_URL} target="_blank" rel="noopener noreferrer">
-    🔗 Custom Domain
-  </a>
-)}
-            {/* Template: always show free download + deploy */}
-            {isReady && isTemplate && (
-              <>
-                <button className="pp-nb pp-nb-outline" onClick={handleFreeDownload}>⬇️ Download</button>
-                {!isGithub && (
-                  <button className="pp-nb pp-nb-green" onClick={() => setChoiceOpen(true)}>🐙 Deploy Free</button>
-                )}
-              </>
-            )}
-            {/* AI-generated: download & hosting are FREE — no payment needed */}
-            {isReady && !isTemplate && !isGithub && (
-              <>
-                <button className="pp-nb pp-nb-outline" onClick={handleFreeDownload}>⬇️ Download</button>
-                <button className="pp-nb pp-nb-green" onClick={() => setChoiceOpen(true)}>🐙 Host Free</button>
-              </>
-            )}
-          </div>
-        </nav>
+     <nav className="pp-nav">
+  <button className="pp-back" onClick={() => navigate('/home')}>← Home</button>
+  <StatusBadge status={project?.status} polling={polling} />
+  <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+    {isReady && (
+      <button className="pp-nb pp-nb-outline" onClick={() => setFullscreen(f => !f)}>
+        {isFullscreen ? '⊡ Exit Full' : '⛶ Full Screen'}
+      </button>
+    )}
+    <button className="pp-nb pp-nb-outline" onClick={() => { setEditTitle(project?.title || ''); setEditOpen(true) }}>✏️</button>
+
+    <button className="pp-nb pp-nb-danger" onClick={() => setDelOpen(true)}>🗑️</button>
+    {isReady && isGithub && (
+      <a className="pp-nb pp-nb-green" href={project.github_url} target="_blank" rel="noopener noreferrer">
+        🌐 View Live ↗
+      </a>
+    )}
+    {isReady && isGithub && (
+      <a className="pp-nb pp-nb-outline" href={CUSTOM_DOMAIN_FORM_URL} target="_blank" rel="noopener noreferrer">
+        🔗 Custom Domain
+      </a>
+    )}
+
+    {/* Template: always free — no unlock needed */}
+    {isReady && isTemplate && (
+      <>
+        <button className="pp-nb pp-nb-outline" onClick={handleFreeDownload}>⬇️ Download</button>
+        {!isGithub && (
+          <button className="pp-nb pp-nb-green" onClick={() => setChoiceOpen(true)}>🐙 Deploy Free</button>
+        )}
+      </>
+    )}
+
+    {/* AI-generated: gated behind the ONE-TIME global ₹99 unlock (user.has_paid) */}
+    {isReady && !isTemplate && !isGithub && (
+      user?.has_paid ? (
+        <>
+          <button className="pp-nb pp-nb-outline" onClick={handleDownloadZip}>⬇️ Download</button>
+          <button className="pp-nb pp-nb-green" onClick={() => setChoiceOpen(true)}>🐙 Host</button>
+        </>
+      ) : (
+        <button className="pp-nb pp-nb-red" onClick={handlePay} disabled={paying}>🔓 Unlock ₹99</button>
+      )
+    )}
+  </div>
+</nav>
 
         <div className="pp-layout">
 
@@ -299,27 +341,32 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
                 )}
 
                 {/* ── AI GENERATED — download & hosting are FREE ── */}
-                {!isTemplate && (
-                  <>
-                    {!isGithub ? (
-                      /* FREE: download or host — no payment needed */
-                      <div className="pp-card pp-card-free">
-                        <div className="pp-free-badge">🆓 Completely Free</div>
-                        <div className="pp-card-name" style={{marginBottom:6}}>Download & Hosting — No Cost</div>
-                        <div className="pp-price-list">
-                          <div className="pp-price-item">✅ Download HTML file — free</div>
-                          <div className="pp-price-item">✅ Host on GitHub Pages — free</div>
-                          <div className="pp-price-item">✅ No payment needed</div>
-                          <div className="pp-price-item">✅ Yours forever</div>
-                        </div>
-                        <button className="pp-dl-btn" style={{marginBottom:8}} onClick={handleFreeDownload}>
-                          ⬇️ Download HTML — Free
-                        </button>
-                        <button className="pp-choice-btn pp-choice-github" onClick={() => setChoiceOpen(true)}>
-                          🐙 Host on GitHub Pages — Free
-                        </button>
-                      </div>
-                    ) : (
+               {!isTemplate && (
+  <>
+    {!user?.has_paid ? (
+      <div className="pp-card pp-card-paid">
+        <div className="pp-price-badge">₹99 One-Time</div>
+        <div className="pp-card-name" style={{marginBottom:6}}>Unlock Download & Hosting</div>
+        <div className="pp-price-list">
+          <div className="pp-price-item">✅ Download full ZIP</div>
+          <div className="pp-price-item">✅ Host on GitHub Pages</div>
+          
+          <div className="pp-price-item">✅ Free Custom code</div>
+          <div className="pp-price-item">✅ Custom Domain Name</div>
+          <div className="pp-price-item">✅ One-time payment — unlocks ALL your websites forever</div>
+        </div>
+        <button className="pp-pay-btn" onClick={handlePay} disabled={paying}>
+          {paying ? '🔄 Opening checkout...' : '🔓 Pay ₹99 to Unlock'}
+        </button>
+      </div>
+    ) : !isGithub ? (
+      <div className="pp-card pp-card-free">
+        <div className="pp-free-badge">🔓 Unlocked</div>
+        <button className="pp-dl-btn" style={{marginBottom:8}} onClick={handleDownloadZip}>⬇️ Download ZIP</button>
+        <button className="pp-choice-btn pp-choice-github" onClick={() => setChoiceOpen(true)}>🐙 Host on GitHub Pages</button>
+      </div>
+    ) : (
+   
                       /* HOSTED: live on GitHub */
                       <div className="pp-card pp-card-hosted">
                         <div className="pp-hosted-live">🟢 Site is Live on GitHub!</div>

@@ -59,25 +59,40 @@ const [mode,     setMode]     = useState('password') // 'password' | 'otp'
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
-const handleSendOTP = async (e) => {
-    e.preventDefault()
-    setOtpLoading(true); setError('')
-    try {
-      await sendOTP(email.trim())
-      setOtpSent(true)
-    } catch (err) { setError(err.message) }
-    finally { setOtpLoading(false) }
+const handleSendOtp = async (e) => {
+  e.preventDefault()
+  if (!name.trim() || !email.trim()) { setError('Name and email are required.'); return }
+  if (phone && !/^\d{6,15}$/.test(phone.replace(/\s/g, ''))) {
+    setError('Please enter a valid phone number (6-15 digits).'); return
   }
+  setLoading(true); setError('')
+  try {
+    await sendOTP(email.trim())
+    setStep('otp')
+    setOtpTimer(30)
+  } catch (err) { setError(err.message) }
+  finally { setLoading(false) }
+}
 
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault()
-    setOtpLoading(true); setError('')
-    try {
-      await loginWithOTP(email.trim(), otp.trim())
-      navigate('/')
-    } catch (err) { setError(err.message) }
-    finally { setOtpLoading(false) }
-  }
+const handleVerifyOtp = async (e) => {
+  e.preventDefault()
+  if (!otp.trim() || otp.trim().length !== 6) { setError('Enter the 6-digit code.'); return }
+  setLoading(true); setError('')
+  try {
+    const fullPhone = phone ? `${selCountry.code}${phone.trim()}` : ''
+    await loginWithOTP(email.trim(), otp.trim(), name.trim(), fullPhone)
+    navigate('/')
+  } catch (err) { setError(err.message) }
+  finally { setLoading(false) }
+}
+
+const handleResend = async () => {
+  if (otpTimer > 0) return
+  setLoading(true); setError('')
+  try { await sendOTP(email.trim()); setOtpTimer(30) }
+  catch (err) { setError(err.message) }
+  finally { setLoading(false) }
+}
   return (
     <>
       <style>{CSS}</style>

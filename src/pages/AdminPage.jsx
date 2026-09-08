@@ -602,15 +602,32 @@ const load = useCallback(async (t=tab) => {
           )}
 
           {/* ═══ PAYMENTS ═══ */}
-          {tab==='payments'&&(
-            <div className="adm-content">
-              <div className="adm-toolbar"><div className="adm-rev-pill">💰 Total Revenue: <strong>{fmtRs(payRev)}</strong></div></div>
-              <div className="adm-card adm-table-wrap" style={{padding:0}}>
-                <table className="adm-table"><thead><tr><th>User</th><th>Project</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
-                <tbody>{payments.map((p,i)=><tr key={i}><td><div className="adm-uname">{p.user_name}</div><div className="adm-uemail">{p.user_email}</div></td><td className="adm-uname">{p.project_title||'—'}</td><td style={{fontWeight:800,color:'#22c55e',fontSize:14}}>{fmtRs(p.amount)}</td><td><span style={{fontSize:11,fontWeight:700,color:stColor(p.status)}}>{p.status}</span></td><td style={{fontSize:11,color:'#a0a0b0'}}>{fmtDt(p.created_at)}</td></tr>)}</tbody></table>
-              </div>
-            </div>
+         {/* ═══ PAYMENTS ═══ */}
+{tab==='payments'&&(
+  <div className="adm-content">
+    <div className="adm-toolbar"><div className="adm-rev-pill">💰 Total Revenue: <strong>{fmtRs(payRev)}</strong></div></div>
+    <div className="adm-card adm-table-wrap" style={{padding:0}}>
+      <table className="adm-table"><thead><tr><th>User</th><th>Project</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>{payments.map((p,i)=><tr key={i}>
+        <td><div className="adm-uname">{p.user_name}</div><div className="adm-uemail">{p.user_email}</div></td>
+        <td className="adm-uname">{p.project_title||'—'}</td>
+        <td style={{fontWeight:800,color:'#22c55e',fontSize:14}}>{fmtRs(p.amount)}</td>
+        <td><span style={{fontSize:11,fontWeight:700,color:stColor(p.status)}}>{p.status}</span></td>
+        <td style={{fontSize:11,color:'#a0a0b0'}}>{fmtDt(p.created_at)}</td>
+        <td>
+          {p.type==='unlock_payment' && p.status==='paid' && (
+            <button className="adm-act-btn adm-act-delete" onClick={()=>setConfirm({
+              title:'🗑️ Revoke Unlock',
+              msg:`Delete this ₹99 unlock payment for ${p.user_name}? They'll be locked out of download & hosting until they pay again.`,
+              color:'#dc2626',
+              action:async()=>{ await adminApi.del(`/admin/payments/${p.id}`); setSuccess('Unlock revoked — user must pay again.'); load('payments') }
+            })}>🗑️ Revoke</button>
           )}
+        </td>
+      </tr>)}</tbody></table>
+    </div>
+  </div>
+)}
 
 
 {/* ═══ CREDITS MANAGER ═══ */}

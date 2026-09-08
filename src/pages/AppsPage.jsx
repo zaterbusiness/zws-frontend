@@ -71,13 +71,20 @@ export default function AppsPage() {
     s === 'generating' ? { bg: 'rgba(245,158,11,0.1)', color: '#92400e', label: '⏳ Generating…' } :
                           { bg: 'rgba(239,68,68,0.1)',  color: '#dc2626', label: '❌ Failed' }
 
-  if (loading) return (
-    <div className="aps-loading">
-      <div className="aps-spinner" />
-      <p>Loading your apps…</p>
-      <style>{CSS}</style>
-    </div>
-  )
+  if (loading) // 🚧 App generation is not live yet — show Coming Soon only
+return (
+  <div style={{minHeight:'70vh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:14,fontFamily:"'Nunito',sans-serif",textAlign:'center',padding:'40px 20px'}}>
+    <style>{CSS}</style>
+    <div style={{fontSize:52}}>🚧</div>
+    <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:26,fontWeight:900,color:'#0a0a12'}}>
+      App Generation — Coming Soon
+    </h2>
+    <p style={{color:'#72727f',fontWeight:500,fontSize:14,maxWidth:380,lineHeight:1.6}}>
+      Full-stack app generation is still in development. You'll be able to build, preview, download, and host apps here soon.
+    </p>
+    <button className="aps-new-btn" onClick={() => navigate('/home')}>← Back to Home</button>
+  </div>
+)
 
   return (
     <>

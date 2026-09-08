@@ -74,15 +74,18 @@ const openAnalytics = async (p) => {
   }
 
   // ── Delete ───────────────────────────────────────────────
-  const confirmDelete = async () => {
-    setDeleteLoading(true)
-    try {
-      await api.delete(`/projects/${deleteModal.id}`)
-      setProjects(prev => prev.filter(p => p.id !== deleteModal.id))
-      setDeleteModal(null)
-    } catch (err) { setError(err.message) }
-    finally { setDeleteLoading(false) }
-  }
+ const confirmDelete = async () => {
+  setDeleteLoading(true)
+  try {
+    const endpoint = deleteModal.type === 'app'
+      ? `/apps/${deleteModal.id}`
+      : `/projects/${deleteModal.id}`
+    await api.delete(endpoint)
+    setProjects(prev => prev.filter(p => p.id !== deleteModal.id))
+    setDeleteModal(null)
+  } catch (err) { setError(err.message) }
+  finally { setDeleteLoading(false) }
+}
 
   const statusMeta = (s) => ({
     generating: { bg: 'rgba(245,158,11,0.1)', color: '#d97706', label: '⏳ Generating' },
@@ -421,7 +424,9 @@ const CSS = `
 /* WARNINGS */
 .pj-regen-warning{background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.25);border-radius:10px;padding:11px 13px;font-size:13px;color:#92400e;font-weight:500;line-height:1.5;margin-bottom:16px;}
 .pj-delete-warning{background:rgba(239,68,68,0.06);border:1.5px solid rgba(239,68,68,0.2);border-radius:10px;padding:13px 15px;font-size:13px;color:#991b1b;font-weight:500;line-height:1.65;}
-
+.pp-nav{display:flex;align-items:center;padding:14px 24px;max-width:1100px;margin:0 auto;}
+.pp-back{background:none;border:none;font-size:13px;font-weight:700;color:#6b6b7a;cursor:pointer;padding:6px 10px;border-radius:8px;font-family:'Nunito',sans-serif;transition:all .18s;}
+.pp-back:hover{background:#f0f0f6;color:#0a0a12;}
 @media(max-width:600px){
   .pj-grid{grid-template-columns:1fr 1fr;gap:12px;}
   .pj-card{padding:14px;gap:9px;}
