@@ -177,7 +177,7 @@ const CONTACTS = [
 const SOCIALS = [
   {
     label: 'Twitter / X',
-    href: 'https://twitter.com/zaterstudio',
+    href: 'https://x.com/zater_webstudio',
     icon: (
       <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
         <path d="M18.9 2H22l-7.6 8.7L23.3 22h-7l-5.5-6.8L4.5 22H1.3l8.1-9.3L1 2h7.2l5 6.3L18.9 2Zm-1.2 18h1.7L7.4 4H5.6l12.1 16Z"/>
