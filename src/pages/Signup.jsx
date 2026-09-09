@@ -79,26 +79,51 @@ export default function Signup() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   const hasGoogle = !!(clientId && !clientId.includes('your_google'))
 
-  useEffect(() => {
-    if (!hasGoogle) return
-    const script = document.createElement('script')
-    script.src = 'https://accounts.google.com/gsi/client'
-    script.async = true
-    script.onload = () => {
-      if (!window.google) return
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: handleGoogleResponse,
-        auto_select: false,
+useEffect(() => {
+  if (!hasGoogle) return
+  const script = document.createElement('script')
+  script.src = 'https://accounts.google.com/gsi/client'
+  script.async = true
+  script.onload = () => {
+    if (!window.google) return
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleResponse,
+      auto_select: false,
+    })
+
+    const container = document.getElementById('g-btn-signup')
+    if (!container) return
+
+    let lastWidth = 0
+    const renderGButton = (width) => {
+      if (!width || Math.abs(width - lastWidth) < 4) return // skip redundant re-renders
+      lastWidth = width
+      container.innerHTML = ''
+      window.google.accounts.id.renderButton(container, {
+        theme: 'outline',
+        size: 'large',
+        width: Math.floor(width),
+        text: 'signup_with',
+        shape: 'rectangular',
+        logo_alignment: 'left',
       })
-      window.google.accounts.id.renderButton(
-        document.getElementById('g-btn-signup'),
-        { theme:'outline', size:'large', width:'396', text:'signup_with', shape:'rectangular', logo_alignment:'left' }
-      )
     }
-    document.head.appendChild(script)
-    return () => { try { document.head.removeChild(script) } catch {} }
-  }, [])
+
+    const ro = new ResizeObserver(entries => {
+      const w = entries[0]?.contentRect?.width
+      if (w) renderGButton(w)
+    })
+    ro.observe(container)
+
+    script._cleanupObserver = () => ro.disconnect()
+  }
+  document.head.appendChild(script)
+  return () => {
+    if (script._cleanupObserver) script._cleanupObserver()
+    try { document.head.removeChild(script) } catch {}
+  }
+}, [])
 
   // OTP resend countdown
   useEffect(() => {
@@ -376,9 +401,9 @@ const CSS = `
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes dropDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 
-.auth-root{min-height:100vh;background:#f4f4f8;display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Nunito',sans-serif;position:relative;}
+.auth-root{min-height:100vh;background:#f4f4f8;display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Nunito',sans-serif;position:relative;overflow-x:hidden;}
 .auth-dotgrid{position:fixed;inset:0;background-image:radial-gradient(circle,#c8c8d6 1px,transparent 1px);background-size:26px 26px;opacity:0.4;pointer-events:none;}
-.auth-card{position:relative;z-index:1;background:#fff;border-radius:24px;padding:36px 32px;width:100%;max-width:460px;box-shadow:0 4px 32px rgba(0,0,0,0.08);border:1.5px solid #e2e2ea;animation:fadeUp 0.4s ease;}
+.auth-card{position:relative;z-index:1;background:#fff;border-radius:24px;padding:36px 32px;width:100%;max-width:460px;box-shadow:0 4px 32px rgba(0,0,0,0.08);border:1.5px solid #e2e2ea;animation:fadeUp 0.4s ease;overflow:hidden;}
 .auth-logo-wrap{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:24px;}
 .auth-logo-img{width:36px;height:36px;border-radius:9px;object-fit:cover;border:1px solid #e8e8e8;}
 .auth-logo-text{font-family:'Playfair Display',serif;font-size:17px;font-weight:800;color:#0a0a12;}
@@ -386,9 +411,10 @@ const CSS = `
 .auth-sub{font-size:14px;color:#72727f;font-weight:500;text-align:center;margin-bottom:24px;}
 
 /* ── Google Sign-Up ── */
-.auth-google-wrap{width:100%;margin-bottom:4px;}
-.auth-g-btn-container{width:100%;min-height:44px;}
+.auth-google-wrap{width:100%;margin-bottom:4px;overflow:hidden;}
+.auth-g-btn-container{width:100%;min-height:44px;overflow:hidden;}
 .auth-g-btn-container > div{width:100% !important;}
+
 .auth-g-loading{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:#72727f;font-weight:600;padding:8px 0;}
 .auth-g-spinner{width:14px;height:14px;border:2px solid rgba(66,133,244,0.3);border-top-color:#4285f4;border-radius:50%;display:inline-block;animation:spin 0.8s linear infinite;flex-shrink:0;}
 .auth-g-not-configured{font-size:11px;color:#a0a0b0;font-weight:600;text-align:center;padding:8px;background:#f8f8fc;border-radius:8px;border:1px dashed #e2e2ea;}
@@ -414,7 +440,7 @@ const CSS = `
 .auth-cc-flag{font-size:18px;line-height:1;}
 .auth-cc-code{font-size:13px;font-weight:700;color:#0a0a12;}
 .auth-cc-arrow{font-size:9px;color:#a0a0b0;}
-.auth-cc-dropdown{position:absolute;top:calc(100% + 6px);left:0;z-index:1000;background:#fff;border:1.5px solid #e2e2ea;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.12);width:260px;overflow:hidden;animation:dropDown 0.15s ease;}
+.auth-cc-dropdown{position:absolute;top:calc(100% + 6px);left:0;z-index:1000;background:#fff;border:1.5px solid #e2e2ea;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.12);width:260px;max-width:calc(100vw - 64px);overflow:hidden;animation:dropDown 0.15s ease;}
 .auth-cc-search-wrap{padding:10px 10px 6px;}
 .auth-cc-search{width:100%;padding:8px 12px;border:1.5px solid #e2e2ea;border-radius:8px;font-size:13px;font-family:'Nunito',sans-serif;color:#0a0a12;outline:none;}
 .auth-cc-search:focus{border-color:#c0392b;}
@@ -441,4 +467,71 @@ const CSS = `
 .auth-switch{text-align:center;font-size:13px;color:#72727f;font-weight:500;}
 .auth-link{color:#c0392b;font-weight:800;text-decoration:none;}
 .auth-link:hover{text-decoration:underline;}
+
+@media (max-width: 480px){
+  .auth-root{padding:12px;}
+  .auth-dotgrid{background-size:20px 20px;}
+  .auth-card{padding:24px 18px;border-radius:18px;}
+  .auth-logo-wrap{gap:8px;margin-bottom:18px;}
+  .auth-logo-img{width:32px;height:32px;}
+  .auth-logo-text{font-size:15px;}
+  .auth-title{font-size:22px;}
+  .auth-sub{font-size:13px;margin-bottom:18px;}
+
+  .auth-google-wrap{margin-bottom:2px;}
+  .auth-g-btn-container{min-height:40px;}
+  .auth-g-loading{font-size:12px;padding:6px 0;}
+  .auth-g-not-configured{font-size:10px;padding:7px;}
+
+  .auth-error{padding:10px 12px;font-size:12px;margin-bottom:14px;}
+
+  .auth-form{gap:13px;}
+  .auth-label{font-size:11px;margin-bottom:6px;}
+  .auth-input{padding:10px 12px;font-size:13px;border-radius:9px;}
+
+  .auth-phone-row{flex-wrap:nowrap;gap:6px;}
+  .auth-cc-btn{padding:0 8px;min-height:42px;border-radius:9px;}
+  .auth-cc-flag{font-size:17px;}
+  .auth-cc-code{font-size:12px;}
+  .auth-cc-arrow{font-size:8px;}
+  .auth-cc-dropdown{width:calc(100vw - 48px);left:0;border-radius:12px;}
+  .auth-cc-search{padding:7px 10px;font-size:12px;}
+  .auth-cc-list{max-height:180px;}
+  .auth-cc-item{padding:7px 9px;}
+  .auth-cc-item-flag{font-size:17px;}
+  .auth-cc-item-name{font-size:12px;}
+  .auth-cc-item-code{font-size:11px;}
+  .auth-phone-preview{font-size:10px;}
+
+  .auth-btn{padding:12px;font-size:14px;border-radius:10px;}
+
+  .auth-divider{margin:14px 0;gap:10px;}
+  .auth-divider span{font-size:11px;}
+
+  .auth-switch{font-size:12px;}
+  
+}
+
+@media (max-width: 360px){
+  .auth-card{padding:20px 14px;}
+  .auth-title{font-size:20px;}
+  .auth-logo-text{font-size:14px;}
+
+  .auth-cc-flag{font-size:16px;}
+  .auth-cc-code{display:none;}
+  .auth-cc-btn{padding:0 6px;}
+  .auth-cc-dropdown{width:calc(100vw - 32px);}
+
+  .auth-phone-input{font-size:12px;}
+  .auth-input{font-size:12.5px;padding:9px 11px;}
+
+  .auth-btn{font-size:13px;padding:11px;}
+}
+
+@media (max-width: 320px){
+  .auth-card{padding:18px 12px;}
+  .auth-title{font-size:19px;}
+  .auth-logo-img{width:28px;height:28px;}
+  .auth-cc-dropdown{width:calc(100vw - 24px);}
+}
 `
