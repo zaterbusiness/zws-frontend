@@ -59,31 +59,26 @@ const [mode,     setMode]     = useState('password') // 'password' | 'otp'
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
-const handleSendOtp = async (e) => {
+const handleSendOTP = async (e) => {
   e.preventDefault()
-  if (!name.trim() || !email.trim()) { setError('Name and email are required.'); return }
-  if (phone && !/^\d{6,15}$/.test(phone.replace(/\s/g, ''))) {
-    setError('Please enter a valid phone number (6-15 digits).'); return
-  }
-  setLoading(true); setError('')
+  if (!email.trim()) { setError('Email is required.'); return }
+  setOtpLoading(true); setError('')
   try {
     await sendOTP(email.trim())
-    setStep('otp')
-    setOtpTimer(30)
+    setOtpSent(true)
   } catch (err) { setError(err.message) }
-  finally { setLoading(false) }
+  finally { setOtpLoading(false) }
 }
 
-const handleVerifyOtp = async (e) => {
+const handleVerifyOTP = async (e) => {
   e.preventDefault()
   if (!otp.trim() || otp.trim().length !== 6) { setError('Enter the 6-digit code.'); return }
-  setLoading(true); setError('')
+  setOtpLoading(true); setError('')
   try {
-    const fullPhone = phone ? `${selCountry.code}${phone.trim()}` : ''
-    await loginWithOTP(email.trim(), otp.trim(), name.trim(), fullPhone)
+    await loginWithOTP(email.trim(), otp.trim())
     navigate('/')
   } catch (err) { setError(err.message) }
-  finally { setLoading(false) }
+  finally { setOtpLoading(false) }
 }
 
 const handleResend = async () => {
@@ -219,7 +214,7 @@ const CSS = `
 .auth-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#0a0a12;text-align:center;margin-bottom:6px;letter-spacing:-0.5px;}
 .auth-sub{font-size:14px;color:#72727f;font-weight:500;text-align:center;margin-bottom:24px;}
 .auth-error{background:rgba(239,68,68,0.07);border:1.5px solid rgba(239,68,68,0.2);border-radius:10px;padding:11px 14px;font-size:13px;color:#dc2626;font-weight:600;margin-bottom:18px;line-height:1.5;}
-.auth-google-box{width:100%;margin-bottom:4px;min-height:44px;}
+.auth-google-box{  max-width:100%;margin-bottom:4px;min-height:44px;}
 .auth-email-btn{width:100%;padding:11px 14px;border:1.5px solid #e2e2ea;border-radius:10px;background:#fff;color:#0a0a12;font-size:14px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;transition:all .18s;}
 .auth-email-btn:hover{border-color:#c0392b;background:rgba(192,57,43,0.04);}
 .auth-email-icon{font-size:15px;}

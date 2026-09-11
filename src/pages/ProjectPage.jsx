@@ -716,5 +716,25 @@ const CSS = `
 .pp-choice-zip-card .pp-choice-note{color:#a0a0b0;}
 .pp-choice-divider{text-align:center;font-size:12px;color:#a0a0b0;font-weight:600;padding:4px 0;border-top:1px solid #f0f0f6;}
 
-@media(max-width:700px){.pp-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr;}.pp-nav{height:auto;padding:8px;}.pp-choice-grid{grid-template-columns:1fr;}}
+@media(max-width:700px){
+  .pp-layout{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto;
+    height:auto;
+    overflow-y:auto;
+  }
+  .pp-preview{
+    order:1;
+    min-height:60vh;
+  }
+  .pp-sidebar{
+    order:2;
+    overflow-y:visible;
+  }
+  .pp-iframe-container{
+    height:80vh;
+  }
+  .pp-nav{height:auto;padding:8px;}
+  .pp-choice-grid{grid-template-columns:1fr;}
+}
 `
