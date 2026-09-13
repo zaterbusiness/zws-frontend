@@ -49,23 +49,25 @@ Built by **Vaishiva** · Powered by **Claude Opus 4.8**`,
   },
 
   {
-    id: 'free_overview',
-    patterns: ['what is free','free features','without paying','completely free','totally free','is it free','free account','no cost'],
-    response: `🆓 **What's FREE:**
+  id: 'free_overview',
+  patterns: ['what is free','free features','without paying','completely free','totally free','is it free','free account','no cost'],
+  response: `🆓 **What's FREE:**
 
-✅ All 10 templates — download & host
-✅ GitHub Pages hosting — free live URL
+✅ All 10 templates — free to browse & use
 ✅ Template customization via Google Form
 ✅ 100 credits on signup (1 free AI generation)
 ✅ Preview all sites
 
-💰 Only paid: extra credits ₹99 = 100 credits`,
-    chips: [
-      { label: '🎨 See Templates', url: LINKS.templates },
-      { label: '⚡ Generate Free', url: LINKS.home },
-    ],
-    quickReplies: ['How to use templates?', 'How to customize free?', 'How do credits work?'],
-  },
+💾 **Download & Hosting** — ₹99 one-time
+💰 Extra credits — ₹99 = 100 credits
+
+🚧 Full-stack app generation — Coming Soon (websites only for now)`,
+  chips: [
+    { label: '🎨 See Templates', url: LINKS.templates },
+    { label: '⚡ Generate a Website', url: LINKS.home },
+  ],
+  quickReplies: ['How to use templates?', 'How to host?', 'How do credits work?'],
+},
 
   {
     id: 'templates_free',
@@ -141,23 +143,23 @@ Works for **templates**, **AI-generated websites**, and **full-stack apps**.`,
 },
 
   {
-    id: 'hosting_free',
-    patterns: ['host','hosting','deploy','live','publish','go live','github pages','how to host','host free','free hosting','website live','github deploy','deploy free','get live url'],
-    response: `🌐 **Free Hosting on GitHub Pages:**
+  id: 'hosting_free',
+  patterns: ['host','hosting','deploy','live','publish','go live','github pages','how to host','host free','free hosting','website live','github deploy','deploy free','get live url','download hosting','host cost','₹99 hosting'],
+  response: `🌐 **Hosting on GitHub Pages — ₹99:**
 
-1. Click **"🐙 Host Free"** on any template or project
-2. URL is created instantly
-3. ⏱️ Wait ~**2 minutes** for GitHub to activate
-4. Check status in **Deployments** page
+1. Click **"🐙 Host"** on any website template or project
+2. Pay ₹99 one-time
+3. URL is created instantly
+4. ⏱️ Wait ~**2 minutes** for GitHub to activate
+5. Check status in **Deployments** page
 
 Your live URL: \`https://zaterbusiness.github.io/zater-sites/...\``,
-    chips: [
-      { label: '🚀 My Deployments', url: LINKS.deployments },
-      { label: '🎨 Pick a Template', url: LINKS.templates },
-    ],
-    // Just extend quickReplies for 'hosting_free':
-quickReplies: ['URL still pending?', 'How to get GitHub token?', 'How to download?', 'Custom domain?', 'Custom code?'],
-  },
+  chips: [
+    { label: '🚀 My Deployments', url: LINKS.deployments },
+    { label: '🎨 Pick a Template', url: LINKS.templates },
+  ],
+  quickReplies: ['URL still pending?', 'How to get GitHub token?', 'How to download?', 'Custom domain?', 'Custom code?'],
+},
 
   {
     id: 'site_pending',
@@ -221,57 +223,58 @@ Done! All future hosting is one-click free 🎉`,
 
 - **Signup** → 100 free credits (1 website generation)
 - **Website generation** → 100 credits
-- **Full-stack app generation** → 200 credits
+- **Full-stack app generation** → 🚧 Coming Soon
 - **Buy more** → ₹99 = 100 credits
 
-Templates/hosting = **always free, no credits!**`,
+Templates = **free to use** · Download & Hosting = **₹99**`,
   chips: [
     { label: '⚡ View Credits', url: LINKS.credits },
     { label: '🎨 Free Templates', url: LINKS.templates },
   ],
-  quickReplies: ['Are templates free without credits?', 'How to buy credits?'],
+  quickReplies: ['Are templates free?', 'How to buy credits?'],
 },
 
-  {
-    id: 'pricing',
-    patterns: ['price','pricing','cost','charge','how much','fee','fees','₹','plan','plans','rate','how much to pay'],
-    response: `💰 **ZWS Pricing:**
+ {
+  id: 'pricing',
+  patterns: ['price','pricing','cost','charge','how much','fee','fees','₹','plan','plans','rate','how much to pay'],
+  response: `💰 **ZWS Pricing:**
 
 | What | Cost |
 |------|------|
-| Templates (10) | 🆓 Free |
-| GitHub hosting | 🆓 Free |
+| Templates (browse & use) | 🆓 Free |
+| Download & GitHub hosting | ₹99 |
 | Website generation | 100 credits |
-| App generation | 200 credits |
+| App generation | 🚧 Coming Soon |
 | First 100 credits | 🆓 Free (signup) |
 | More credits | ₹99 = 100 credits |
-| Manual hosting | ₹399 one-time |
+| Manual hosting (full-stack) | ₹399 one-time |
 
 No subscription. No hidden fees.`,
-    chips: [
-      { label: '⚡ Get Started Free', url: LINKS.home },
-    ],
-    quickReplies: ['What are credits?', 'What templates are free?'],
-  },
+  chips: [
+    { label: '⚡ Get Started Free', url: LINKS.home },
+  ],
+  quickReplies: ['What are credits?', 'What templates are free?'],
+},
 
-  {
-    id: 'how_to_generate',
-    patterns: ['how to generate','how do i generate','how to create','how to make','generate website','create website','make website','build website','steps to generate','generate app'],
-    response: `⚡ **Generate a Website/App:**
+ {
+  id: 'how_to_generate',
+  patterns: ['how to generate','how do i generate','how to create','how to make','generate website','create website','make website','build website','steps to generate','generate app'],
+  response: `⚡ **Generate a Website:**
 
 1. Sign up → get 100 free credits
-2. Choose **Website (100 credits)** or **Full-Stack App (200 credits)**
-3. Describe your site (be specific!)
-4. Click **Generate ⚡** — done in 30–60s
-5. Preview → Download or Host free
+2. Describe your website (be specific!)
+3. Click **Generate ⚡** — done in 30–60s
+4. Preview → Download or Host (₹99)
+
+🚧 Full-stack app generation is coming soon!
 
 💡 Tip: Use templates first — free, no credits!`,
-    chips: [
-      { label: '⚡ Generate Now', url: LINKS.home },
-      { label: '🎨 Free Templates', url: LINKS.templates },
-    ],
-    quickReplies: ['How to write a good prompt?', 'How does hosting work?', 'How do credits work?'],
-  },
+  chips: [
+    { label: '⚡ Generate Now', url: LINKS.home },
+    { label: '🎨 Free Templates', url: LINKS.templates },
+  ],
+  quickReplies: ['How to write a good prompt?', 'How does hosting work?', 'How do credits work?'],
+},
 {
   id: 'help_center',
   patterns: ['help center','help page','helpcenter','faq','documentation','docs','guide','user guide','more help'],
@@ -302,22 +305,21 @@ Include: **business type · style · sections · colors · purpose**
   },
 
   {
-    id: 'fullstack',
-    patterns: ['full stack','fullstack','app mode','react','nodejs','node.js','express','mysql','backend','full-stack app','build app','generate app','api routes'],
-    response: `⚛️ **Full-Stack App Mode:**
+  id: 'fullstack',
+  patterns: ['full stack','fullstack','app mode','react','nodejs','node.js','express','mysql','backend','full-stack app','build app','generate app','api routes'],
+  response: `⚛️ **Full-Stack App Mode — 🚧 Coming Soon!**
 
-Generates 4 files: **App.jsx · server.js · schema.sql · README.md**
+Right now ZWS supports **Website Generation** only.
 
-**4 Free App Templates:**
-User Management · E-Commerce · Food Ordering · Appointment Booking
+Full-stack app generation (React + Node.js + MySQL) is in development and will launch soon. Stay tuned! 🚀
 
-Download as a **ZIP file** anytime · free to host, customize & edit code`,
-    chips: [
-      { label: '⚛️ Build an App', url: LINKS.home },
-      { label: '🎨 App Templates', url: LINKS.templates },
-    ],
-    quickReplies: ['How to run downloaded app?', 'How do credits work?'],
-  },
+Meanwhile, you can generate & download full websites — hosting is ₹99.`,
+  chips: [
+    { label: '⚡ Generate a Website', url: LINKS.home },
+    { label: '🎨 Templates', url: LINKS.templates },
+  ],
+  quickReplies: ['How to generate a website?', 'How do credits work?'],
+},
 
   {
     id: 'run_app',
@@ -342,20 +344,20 @@ Check **README.md** for project-specific instructions.`,
   },
 
   {
-    id: 'payment',
-    patterns: ['upi','gpay','google pay','phonepe','paytm','netbanking','debit card','credit card','how to pay','payment method','razorpay'],
-    response: `💳 **Payment (Razorpay — Secure):**
+  id: 'payment',
+  patterns: ['upi','gpay','google pay','phonepe','paytm','netbanking','debit card','credit card','how to pay','payment method','razorpay'],
+  response: `💳 **Payment (Razorpay — Secure):**
 
 Accepts: UPI (GPay, PhonePe, Paytm) · Debit/Credit Card · Net Banking
 
-Only needed for **extra credits** (₹99) or manual hosting (₹399).
+Needed for: **Download & Hosting** (₹99), extra credits (₹99), or manual full-stack hosting (₹399).
 
-Templates, hosting, and customization = **always free!**`,
-    chips: [
-      { label: '⚡ Buy Credits', url: LINKS.credits },
-    ],
-    quickReplies: ['Payment failed?', 'What is free?'],
-  },
+Browsing templates & customization = **always free!**`,
+  chips: [
+    { label: '⚡ Buy Credits', url: LINKS.credits },
+  ],
+  quickReplies: ['Payment failed?', 'What is free?'],
+},
 
   {
     id: 'payment_failed',
@@ -424,20 +426,20 @@ No credit card to sign up!`,
 },
 
   {
-    id: 'safe',
-    patterns: ['safe','secure','security','trust','legit','legitimate','scam','real','genuine','is this real'],
-    response: `🔒 **Yes, ZWS is safe & legit!**
+  id: 'safe',
+  patterns: ['safe','secure','security','trust','legit','legitimate','scam','real','genuine','is this real'],
+  response: `🔒 **Yes, ZWS is safe & legit!**
 
-✅ Templates truly free — no card needed
+✅ Templates free to browse & use
 ✅ Payments by Razorpay (India's #1 gateway)
-✅ Free preview before using credits
+✅ Free preview before download
 ✅ Full source code — 100% yours
 ✅ Built in India by a real developer 🇮🇳`,
-    chips: [
-      { label: '⚡ Get Started Free', url: LINKS.home },
-    ],
-    quickReplies: ['What is actually free?', 'How to get started?'],
-  },
+  chips: [
+    { label: '⚡ Get Started Free', url: LINKS.home },
+  ],
+  quickReplies: ['What is actually free?', 'How to get started?'],
+},
 
   {
     id: 'thanks',
@@ -452,16 +454,17 @@ Anything else?`,
   },
 
   {
-    id: 'bye',
-    patterns: ['bye','goodbye','see you','exit','done','that is all','thats all','no thanks','nothing else'],
-    response: `👋 Goodbye! Remember:
-🎨 Templates + hosting = **always free**
-⚡ AI generation = **free once** on signup`,
-    chips: [
-      { label: '🚀 Open ZWS', url: LINKS.home },
-    ],
-    quickReplies: [],
-  },
+  id: 'bye',
+  patterns: ['bye','goodbye','see you','exit','done','that is all','thats all','no thanks','nothing else'],
+  response: `👋 Goodbye! Remember:
+🎨 Templates = **free to use**
+💾 Download & hosting = **₹99**
+⚡ AI website generation = **free once** on signup`,
+  chips: [
+    { label: '🚀 Open ZWS', url: LINKS.home },
+  ],
+  quickReplies: [],
+},
 ]
 
 function findMatch(input) {
@@ -492,15 +495,17 @@ const WELCOME = {
   role: 'assistant',
   content: `👋 Hi! I'm **ZWS Bot** — instant help for **Zater Web Studio**!
 
-🎨 Free templates · 🌐 Free hosting · ⚡ AI generation · ✏️ Free customization
+🎨 Free templates · ⚡ AI website generation · 💾 Download & Host ₹99
+
+🚧 Full-stack app generation coming soon!
 
 What can I help you with?`,
   chips: [
     { label: '🎨 Browse Templates', url: LINKS.templates },
-    { label: '⚡ Generate a Site', url: LINKS.home },
+    { label: '⚡ Generate a Website', url: LINKS.home },
     { label: '🚀 My Deployments', url: LINKS.deployments },
   ],
-  quickReplies: ['What is free?', 'How to host free?', 'How do credits work?'],
+  quickReplies: ['What is free?', 'How to host?', 'How do credits work?'],
 }
 
 const FALLBACK_QR = ['What is free?', 'How to use templates?', 'How to host free?', 'Contact support']

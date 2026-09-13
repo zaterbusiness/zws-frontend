@@ -906,7 +906,7 @@ const removeLogo = () => {
           {/* ══ PRICING ══ */}
           <div className="h-pricing-wrap">
             <div className="h-pricing-title">
-              {mode === 'website' ? '🆓 Everything is free — generate, download & host' : 'What gets generated'}
+              {mode === 'website' ? '⚡ Generate & preview free — download & host for ₹99' : 'What gets generated'}
             </div>
             {mode === 'website' ? (
               <>
@@ -935,22 +935,22 @@ const removeLogo = () => {
                     </div>
                   </div>
                   <div className="h-step-arrow">→</div>
-                  <div className="h-step-card h-step-featured" style={{borderColor:'#22c55e',boxShadow:'0 6px 24px rgba(34,197,94,0.15)'}}>
-                    <div className="h-step-badge" style={{background:'#22c55e'}}>Always Free</div>
-                    <div className="h-step-num" style={{background:'#22c55e',color:'#fff'}}>3</div>
+                  <div className="h-step-card h-step-featured" style={{borderColor:'#f59e0b',boxShadow:'0 6px 24px rgba(245,158,11,0.15)'}}>
+                    <div className="h-step-badge" style={{background:'#f59e0b'}}>₹99</div>
+                    <div className="h-step-num" style={{background:'#f59e0b',color:'#fff'}}>3</div>
                     <div className="h-step-icon">💾</div>
                     <div className="h-step-name">Download & Host</div>
-                    <div className="h-step-price" style={{color:'#22c55e'}}>FREE</div>
-                    <div className="h-step-desc">Download your website or host on GitHub Pages — completely free.</div>
+                    <div className="h-step-price" style={{color:'#f59e0b'}}>₹99</div>
+                    <div className="h-step-desc">Download your website or host on GitHub Pages — just ₹99 one-time.</div>
                     <div className="h-step-perks">
                       <div className="h-step-perk">✅ Full HTML + CSS + JS</div>
-                      <div className="h-step-perk">✅ Host on GitHub Pages free</div>
+                      <div className="h-step-perk">✅ Host on GitHub Pages</div>
                       <div className="h-step-perk">✅ Edit freely</div>
                     </div>
                   </div>
                 </div>
                 <div className="h-what-box">
-                  <div className="h-what-title">🎯 What you get — completely free</div>
+                  <div className="h-what-title">🎯 What you get (download ₹99)</div>
                   <div className="h-what-grid">
                     <div className="h-what-item"><span>💻</span> Single HTML file</div>
                     <div className="h-what-item"><span>🎨</span> All CSS included</div>
@@ -989,7 +989,7 @@ const removeLogo = () => {
                   </div>
                   <div className="h-step-arrow">+</div>
                   <div className="h-step-card h-step-featured" style={{borderColor:'#5b4fff',boxShadow:'0 6px 24px rgba(91,79,255,0.15)'}}>
-                    <div className="h-step-badge" style={{background:'#22c55e'}}>🆓 Free</div>
+                    <div className="h-step-badge" style={{background:'#f59e0b'}}>₹99</div>
                     <div className="h-step-num" style={{background:'#5b4fff',color:'#fff'}}>3</div>
                     <div className="h-step-icon">🗄️</div><div className="h-step-name">DB + Guide</div>
                     <div className="h-step-price" style={{color:'#5b4fff',fontSize:20,marginBottom:6}}>MySQL + README</div>
@@ -1002,7 +1002,7 @@ const removeLogo = () => {
                   </div>
                 </div>
                 <div className="h-what-box" style={{borderColor:'rgba(91,79,255,0.2)',background:'rgba(91,79,255,0.03)'}}>
-                  <div className="h-what-title">🎯 What you get — completely free</div>
+                  <div className="h-what-title">🎯 What you get (download ₹99)</div>
                   <div className="h-what-grid">
                     <div className="h-what-item"><span>⚛️</span> React App.jsx</div>
                     <div className="h-what-item"><span>🖥️</span> server.js (Node/Express)</div>
@@ -1014,7 +1014,7 @@ const removeLogo = () => {
                 </div>
               </>
             )}
-            <p className="h-pricing-note">✅ Generate, preview, download & host — all completely free. Credits only required for generation.</p>
+            <p className="h-pricing-note">✅ Generate & preview are free. Download & hosting is ₹99. Credits only required for generation.</p>
           </div>
 
           {/* ══ CUSTOM DEVELOPMENT OPTION ══ */}
