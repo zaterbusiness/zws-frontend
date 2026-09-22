@@ -9,7 +9,9 @@ const DEVICE_SIZES = {
 export default function ProjectPage() {
   const { id }    = useParams()
   const navigate  = useNavigate()
-  
+const [questions,      setQuestions]     = useState([])
+const [answers,        setAnswers]       = useState({})
+const [answersLoading, setAnswersLoading]= useState(false)
 const iframeRef = useRef(null)
 const wrapRef   = useRef(null)
 const [scale, setScale] = useState(1)
@@ -24,7 +26,8 @@ const [scale, setScale] = useState(1)
 const { user, setUser } = useAuth()   // add setUser
   // After-payment choice modal
   const [choiceOpen,  setChoiceOpen] = useState(false)
-
+const [customizeOpen, setCustomizeOpen] = useState(false)
+const [customCode, setCustomCode] = useState('')
   // GitHub deploy state
   const [ghDeploying, setGhDeploying]= useState(false)
 
@@ -38,6 +41,7 @@ const { user, setUser } = useAuth()   // add setUser
   const [delOpen,     setDelOpen]    = useState(false)
   const [delLoading,  setDelLoading] = useState(false)
 const [currentStep, setCurrentStep] = useState('')
+
  // 'laptop' | 'mobile'
 const [device, setDevice] = useState('mobile')
   const fetchProject = useCallback(async () => {
@@ -65,16 +69,34 @@ useEffect(() => {
 useEffect(() => {
   let iv
   fetchProject().then(p => {
-    if (p?.status === 'generating') {
+    if (!p) return
+
+    if (p.status === 'generating' || p.status === 'analyzing') {
       setPolling(true)
-      setCurrentStep(p?.current_step || 'Starting generation...')
+      setCurrentStep(p.current_step || 'Analyzing your prompt...')
       iv = setInterval(async () => {
         try {
           const s = await api.get(`/projects/${id}/status`)
           if (s.current_step) setCurrentStep(s.current_step)
-          if (s.status !== 'generating') { clearInterval(iv); setPolling(false); fetchProject() }
+          if (s.status !== 'generating' && s.status !== 'analyzing') {
+            clearInterval(iv)
+            setPolling(false)
+            fetchProject().then(p2 => {
+              if (p2?.status === 'awaiting_answers') {
+                api.get(`/projects/${id}/questions`)
+                  .then(d => setQuestions(d.questions || []))
+                  .catch(err => setError(err.message))
+              }
+            })
+          }
         } catch {}
-      }, 2000)
+      }, 1500)
+    }
+
+    if (p.status === 'awaiting_answers') {
+      api.get(`/projects/${id}/questions`)
+        .then(d => setQuestions(d.questions || []))
+        .catch(err => setError(err.message))
     }
   })
   return () => clearInterval(iv)
@@ -110,8 +132,26 @@ useEffect(() => {
     } catch (err) { setError(err.message) }
     finally { setRegenBusy(false) }
   }
+  const submitAnswers = async () => {
+  setAnswersLoading(true); setError('')
+  try {
+    await api.post(`/projects/${id}/answers`, { answers })
+    setProject(p => ({ ...p, status: 'generating' }))
+    setPolling(true)
+    setCurrentStep('Designing layout & writing content...')
+    const iv = setInterval(async () => {
+      try {
+        const s = await api.get(`/projects/${id}/status`)
+        if (s.current_step) setCurrentStep(s.current_step)
+        if (s.status !== 'generating') { clearInterval(iv); setPolling(false); fetchProject() }
+      } catch {}
+    }, 2000)
+  } catch (err) { setError(err.message) }
+  finally { setAnswersLoading(false) }
+}
+const isAwaitingAnswers = project?.status === 'awaiting_answers'
 const [paying, setPaying] = useState(false)
-
+const isAnalyzing = project?.status === 'analyzing'
 // ── Pay ₹99 to unlock download + hosting ──────────────────────
 const handlePay = async () => {
   setPaying(true); setError('')
@@ -428,65 +468,127 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
 
           {/* MAIN PREVIEW */}
           <main className="pp-preview ">
-            {isGenerating && <GeneratingState step={currentStep} />}
+  {isAnalyzing && (
+    <div className="pp-center-state">
+      <div className="pp-gen-ring" />
+      <h3 className="pp-state-title">Analyzing your prompt...</h3>
+      <p className="pp-state-sub">{currentStep || 'Figuring out the best questions to ask...'}</p>
+    </div>
+  )}
 
-            {isReady && project?.generated_html && (
-              <div className="pp-iframe-container">
-                <div className="pp-browser-bar">
-  <div className="pp-browser-dots">
-    <span style={{background:'#ef4444'}} />
-    <span style={{background:'#f59e0b'}} />
-    <span style={{background:'#22c55e'}} />
+  {isAwaitingAnswers && (
+  <div className="pp-center-state" style={{maxWidth:460, margin:'0 auto', textAlign:'left'}}>
+    <h3 className="pp-state-title" style={{marginBottom:4}}>Quick questions first</h3>
+    <p className="pp-state-sub" style={{marginBottom:14}}>
+      A few details help Claude design a better site for you.
+    </p>
+    {questions.length === 0 ? (
+      <div className="pp-gen-ring" />
+    ) : (
+      <>
+        {questions.map(q => (
+          <div key={q.id} style={{width:'100%', marginBottom:16}}>
+            <label className="pp-lbl" style={{marginBottom:8, display:'block'}}>{q.question}</label>
+            <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
+              {(q.options || []).map(opt => {
+                const selected = answers[q.id] === opt
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setAnswers(a => ({ ...a, [q.id]: opt }))}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 9,
+                      border: selected ? '1.5px solid #5b4fff' : '1.5px solid #e2e2ea',
+                      background: selected ? 'rgba(91,79,255,0.08)' : '#fff',
+                      color: selected ? '#5b4fff' : '#3a3a4a',
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      fontFamily: 'Nunito, sans-serif',
+                      cursor: 'pointer',
+                      transition: 'all .15s',
+                    }}
+                  >
+                    {opt}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+        <button
+          className="pp-pay-btn"
+          style={{background:'#5b4fff'}}
+          onClick={submitAnswers}
+          disabled={answersLoading || questions.some(q => !answers[q.id])}
+        >
+          {answersLoading ? '🔄 Starting generation...' : '🚀 Generate My Website'}
+        </button>
+      </>
+    )}
   </div>
-  <div className="pp-browser-url">
-    {isGithub ? project.github_url : 'preview.zater.in — ' + (project?.title || '')}
-  </div>
-  <div style={{display:'flex',gap:6}}>
-    <button
-      className={`pp-device-btn ${device === 'laptop' ? 'pp-device-active' : ''}`}
-      onClick={() => setDevice('laptop')}
-      title="Laptop view"
-    >💻</button>
-    <button
-      className={`pp-device-btn ${device === 'mobile' ? 'pp-device-active' : ''}`}
-      onClick={() => setDevice('mobile')}
-      title="Mobile view"
-    >📱</button>
-    <button className="pp-browser-btn" onClick={() => iframeRef.current?.contentWindow?.location?.reload?.()}>↻</button>
-    <button className="pp-browser-btn" onClick={() => setFullscreen(f => !f)}>{isFullscreen ? '⊡' : '⛶'}</button>
-  </div>
-</div>
-               <div className={`pp-iframe-wrap pp-device-${device}`} ref={wrapRef}>
-  <div
-    className="pp-iframe-scaler"
-    style={{
-      width: DEVICE_SIZES[device].width,
-      height: DEVICE_SIZES[device].height,
-      transform: `scale(${scale})`,
-    }}
-  >
-      <iframe
-        ref={iframeRef}
-        className="pp-iframe"
-        srcDoc={project.generated_html}
-        title={project.title}
-        style={{ width: DEVICE_SIZES[device].width, height: DEVICE_SIZES[device].height }}
-        sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-same-origin allow-downloads"
-      />
-  </div>
-</div>
-</div>
-            )}
+)}
 
-            {isFailed && (
-              <div className="pp-center-state">
-                <div style={{fontSize:48}}>⚠️</div>
-                <h3 className="pp-state-title">Generation Failed</h3>
-                <p className="pp-state-sub">Try regenerating with a different prompt.</p>
-                <button style={S.outBtn} onClick={() => { setRegenPrm(project?.prompt || ''); setRegenOpen(true) }}>🔄 Try Again</button>
-              </div>
-            )}
-          </main>
+  {isGenerating && <GeneratingState step={currentStep} />}
+
+  {isReady && project?.generated_html && (
+    <div className="pp-iframe-container">
+      <div className="pp-browser-bar">
+        <div className="pp-browser-dots">
+          <span style={{background:'#ef4444'}} />
+          <span style={{background:'#f59e0b'}} />
+          <span style={{background:'#22c55e'}} />
+        </div>
+        <div className="pp-browser-url">
+          {isGithub ? project.github_url : 'preview.zater.in — ' + (project?.title || '')}
+        </div>
+        <div style={{display:'flex',gap:6}}>
+          <button
+            className={`pp-device-btn ${device === 'laptop' ? 'pp-device-active' : ''}`}
+            onClick={() => setDevice('laptop')}
+            title="Laptop view"
+          >💻</button>
+          <button
+            className={`pp-device-btn ${device === 'mobile' ? 'pp-device-active' : ''}`}
+            onClick={() => setDevice('mobile')}
+            title="Mobile view"
+          >📱</button>
+          <button className="pp-browser-btn" onClick={() => iframeRef.current?.contentWindow?.location?.reload?.()}>↻</button>
+          <button className="pp-browser-btn" onClick={() => setFullscreen(f => !f)}>{isFullscreen ? '⊡' : '⛶'}</button>
+        </div>
+      </div>
+      <div className={`pp-iframe-wrap pp-device-${device}`} ref={wrapRef}>
+        <div
+          className="pp-iframe-scaler"
+          style={{
+            width: DEVICE_SIZES[device].width,
+            height: DEVICE_SIZES[device].height,
+            transform: `scale(${scale})`,
+          }}
+        >
+          <iframe
+            ref={iframeRef}
+            className="pp-iframe"
+            srcDoc={project.generated_html}
+            title={project.title}
+            style={{ width: DEVICE_SIZES[device].width, height: DEVICE_SIZES[device].height }}
+            sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-same-origin allow-downloads"
+          />
+        </div>
+      </div>
+    </div>
+  )}
+
+  {isFailed && (
+    <div className="pp-center-state">
+      <div style={{fontSize:48}}>⚠️</div>
+      <h3 className="pp-state-title">Generation Failed</h3>
+      <p className="pp-state-sub">Try regenerating with a different prompt.</p>
+      <button style={S.outBtn} onClick={() => { setRegenPrm(project?.prompt || ''); setRegenOpen(true) }}>🔄 Try Again</button>
+    </div>
+  )}
+</main>
         </div>
 
         {/* ══ CHOICE MODAL — download / github ══ */}
@@ -769,7 +871,14 @@ const CSS = `
 .pp-choice-note{font-size:10px;font-weight:500;color:rgba(255,255,255,0.4);text-align:center;}
 .pp-choice-zip-card .pp-choice-note{color:#a0a0b0;}
 .pp-choice-divider{text-align:center;font-size:12px;color:#a0a0b0;font-weight:600;padding:4px 0;border-top:1px solid #f0f0f6;}
-
+.pp-customize-toggle{width:100%;padding:10px;background:#f4f4f8;border:none;border-top:1px solid #e2e2ea;font-size:13px;font-weight:700;color:#3a3a4a;cursor:pointer;font-family:'Nunito',sans-serif;transition:background .15s;}
+.pp-customize-toggle:hover{background:#eaeaf0;}
+.pp-customize-panel{background:#0a0a12;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.pp-code-textarea{width:100%;min-height:260px;background:#14141c;color:#e2e2ea;border:1px solid #2a2a36;border-radius:8px;padding:12px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;resize:vertical;outline:none;}
+.pp-code-textarea:focus{border-color:#c0392b;}
+.pp-customize-actions{display:flex;justify-content:flex-end;}
+.pp-customize-apply{padding:8px 16px;border-radius:8px;background:#22c55e;border:none;color:#fff;font-size:12.5px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:opacity .15s;}
+.pp-customize-apply:hover{opacity:.88;}
 @media(max-width:700px){
   .pp-layout{
     grid-template-columns:1fr;
