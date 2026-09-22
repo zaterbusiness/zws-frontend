@@ -2,12 +2,17 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
-
+const DEVICE_SIZES = {
+  laptop: { width: 1280, height: 800 },
+  mobile: { width: 375,  height: 667 },
+}
 export default function ProjectPage() {
   const { id }    = useParams()
   const navigate  = useNavigate()
   
-  const iframeRef = useRef(null)
+const iframeRef = useRef(null)
+const wrapRef   = useRef(null)
+const [scale, setScale] = useState(1)
 
   const [project,     setProject]    = useState(null)
   const [loading,     setLoading]    = useState(true)
@@ -33,7 +38,8 @@ const { user, setUser } = useAuth()   // add setUser
   const [delOpen,     setDelOpen]    = useState(false)
   const [delLoading,  setDelLoading] = useState(false)
 const [currentStep, setCurrentStep] = useState('')
-
+ // 'laptop' | 'mobile'
+const [device, setDevice] = useState('mobile')
   const fetchProject = useCallback(async () => {
     try {
       const d = await api.get(`/projects/${id}`)
@@ -41,6 +47,20 @@ const [currentStep, setCurrentStep] = useState('')
     } catch (err) { setError(err.message); return null }
     finally { setLoading(false) }
   }, [id])
+useEffect(() => {
+  const el = wrapRef.current
+  if (!el) return
+  const update = () => {
+    const { width: targetWidth } = DEVICE_SIZES[device]
+    const containerWidth = el.clientWidth - 40 // account for padding
+    setScale(Math.min(1, containerWidth / targetWidth))
+  }
+  
+  update()
+  const ro = new ResizeObserver(update)
+  ro.observe(el)
+  return () => ro.disconnect()
+}, [device])
 
 useEffect(() => {
   let iv
@@ -137,25 +157,23 @@ const handlePay = async () => {
   // Download & hosting are FREE for everyone — no payment needed
 
   // ── Download as ZIP ───────────────────────────────────────────
-  const handleDownloadZip = async () => {
-    setError('')
-    try {
-      const token = api.getToken()
-      const base  = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-      const res   = await fetch(`${base}/projects/${id}/download`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (!res.ok) { const d = await res.json().catch(() => {}); throw new Error(d?.error || 'Download failed') }
-      const blob = await res.blob()
-      const url  = URL.createObjectURL(blob)
-      const a    = document.createElement('a')
-      a.href = url
-      a.download = `${project?.title?.replace(/[^a-z0-9]/gi, '_') || 'website'}.zip`
-      a.click(); URL.revokeObjectURL(url)
-      setChoiceOpen(false)
-      setSuccess('✅ ZIP downloaded! Check your downloads folder.')
-    } catch (err) { setError(err.message) }
-  }
+ // ── Download as single HTML file ──────────────────────────────
+const handleDownloadZip = async () => {
+  setError('')
+  try {
+    if (!project?.generated_html) {
+      throw new Error('No generated content available to download yet.')
+    }
+    const blob = new Blob([project.generated_html], { type: 'text/html' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href = url
+    a.download = `${project?.title?.replace(/[^a-z0-9]/gi, '_') || 'website'}.html`
+    a.click(); URL.revokeObjectURL(url)
+    setChoiceOpen(false)
+    setSuccess('✅ HTML file downloaded! Check your downloads folder.')
+  } catch (err) { setError(err.message) }
+}
 
   // ── Free download (for template projects) ────────────────────
   const handleFreeDownload = () => {
@@ -266,7 +284,7 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
           <button className="pp-nb pp-nb-green" onClick={() => setChoiceOpen(true)}>🐙 Host</button>
         </>
       ) : (
-        <button className="pp-nb pp-nb-red" onClick={handlePay} disabled={paying}>🔓 Unlock ₹99</button>
+        <button className="pp-nb pp-nb-red" onClick={handlePay} disabled={paying}>🔓 Unlock ₹49</button>
       )
     )}
   </div>
@@ -345,8 +363,8 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
   <>
     {!user?.has_paid ? (
       <div className="pp-card pp-card-paid">
-        <div className="pp-price-badge">₹99 One-Time</div>
-        <div className="pp-card-name" style={{marginBottom:6}}>Unlock Download & Hosting</div>
+        <div className="pp-price-badge">₹49 One-Time</div>
+        <div className="pp-card-name" style={{marginBottom:6}}>Unlock Download & Hosting for just ₹49 — Pay Once, Use Forever!</div>
         <div className="pp-price-list">
           <div className="pp-price-item">✅ Download full ZIP</div>
           <div className="pp-price-item">✅ Host on GitHub Pages</div>
@@ -356,7 +374,7 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
           <div className="pp-price-item">✅ One-time payment — unlocks ALL your websites forever</div>
         </div>
         <button className="pp-pay-btn" onClick={handlePay} disabled={paying}>
-          {paying ? '🔄 Opening checkout...' : '🔓 Pay ₹99 to Unlock'}
+          {paying ? '🔄 Opening checkout...' : '🔓 Pay ₹49 to Unlock'}
         </button>
       </div>
     ) : !isGithub ? (
@@ -409,33 +427,55 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
           </aside>
 
           {/* MAIN PREVIEW */}
-          <main className="pp-preview">
+          <main className="pp-preview ">
             {isGenerating && <GeneratingState step={currentStep} />}
 
             {isReady && project?.generated_html && (
               <div className="pp-iframe-container">
                 <div className="pp-browser-bar">
-                  <div className="pp-browser-dots">
-                    <span style={{background:'#ef4444'}} />
-                    <span style={{background:'#f59e0b'}} />
-                    <span style={{background:'#22c55e'}} />
-                  </div>
-                  <div className="pp-browser-url">
-                    {isGithub ? project.github_url : 'preview.zater.in — ' + (project?.title || '')}
-                  </div>
-                  <div style={{display:'flex',gap:6}}>
-                    <button className="pp-browser-btn" onClick={() => iframeRef.current?.contentWindow?.location?.reload?.()}>↻</button>
-                    <button className="pp-browser-btn" onClick={() => setFullscreen(f => !f)}>{isFullscreen ? '⊡' : '⛶'}</button>
-                  </div>
-                </div>
-                <iframe
-                  ref={iframeRef}
-                  className="pp-iframe"
-                  srcDoc={project.generated_html}
-                  title={project.title}
-                  sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-same-origin allow-downloads"
-                />
-              </div>
+  <div className="pp-browser-dots">
+    <span style={{background:'#ef4444'}} />
+    <span style={{background:'#f59e0b'}} />
+    <span style={{background:'#22c55e'}} />
+  </div>
+  <div className="pp-browser-url">
+    {isGithub ? project.github_url : 'preview.zater.in — ' + (project?.title || '')}
+  </div>
+  <div style={{display:'flex',gap:6}}>
+    <button
+      className={`pp-device-btn ${device === 'laptop' ? 'pp-device-active' : ''}`}
+      onClick={() => setDevice('laptop')}
+      title="Laptop view"
+    >💻</button>
+    <button
+      className={`pp-device-btn ${device === 'mobile' ? 'pp-device-active' : ''}`}
+      onClick={() => setDevice('mobile')}
+      title="Mobile view"
+    >📱</button>
+    <button className="pp-browser-btn" onClick={() => iframeRef.current?.contentWindow?.location?.reload?.()}>↻</button>
+    <button className="pp-browser-btn" onClick={() => setFullscreen(f => !f)}>{isFullscreen ? '⊡' : '⛶'}</button>
+  </div>
+</div>
+               <div className={`pp-iframe-wrap pp-device-${device}`} ref={wrapRef}>
+  <div
+    className="pp-iframe-scaler"
+    style={{
+      width: DEVICE_SIZES[device].width,
+      height: DEVICE_SIZES[device].height,
+      transform: `scale(${scale})`,
+    }}
+  >
+      <iframe
+        ref={iframeRef}
+        className="pp-iframe"
+        srcDoc={project.generated_html}
+        title={project.title}
+        style={{ width: DEVICE_SIZES[device].width, height: DEVICE_SIZES[device].height }}
+        sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-same-origin allow-downloads"
+      />
+  </div>
+</div>
+</div>
             )}
 
             {isFailed && (
@@ -665,6 +705,20 @@ const CSS = `
 .pp-gen-ring{width:72px;height:72px;border:3px solid #e2e2ea;border-top-color:#0a0a12;border-radius:50%;animation:spin .9s linear infinite;flex-shrink:0;}
 .pp-state-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:800;color:#0a0a12;}
 .pp-state-sub{font-size:14px;color:#a0a0b0;font-weight:500;max-width:280px;line-height:1.55;}
+
+.pp-device-btn{background:none;border:1.5px solid #e2e2ea;font-size:14px;cursor:pointer;padding:5px 9px;border-radius:6px;color:#72727f;transition:all .15s;line-height:1;}
+.pp-device-btn:hover{border-color:#0a0a12;color:#0a0a12;}
+.pp-device-active{background:#0a0a12;border-color:#0a0a12;color:#fff;}
+.pp-device-active:hover{color:#fff;}
+
+.pp-iframe-wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;overflow:auto;background:#e2e2ea;padding:20px;isolation:isolate;}
+.pp-iframe-scaler{transform-origin:top center;flex-shrink:0;transition:transform .15s ease;position:relative;z-index:1;}
+.pp-iframe{display:block;width:100%;height:100%;border:none;background:#fff;position:relative;}
+.pp-device-laptop .pp-iframe{border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);}
+.pp-device-mobile .pp-iframe{border-radius:26px;border:8px solid #0a0a12;box-shadow:0 10px 40px rgba(0,0,0,0.25);}
+@media(max-width:700px){
+  .pp-device-mobile .pp-iframe{width:100%;max-width:375px;height:70vh;}
+}
 
 .pp-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .15s ease;}
 .pp-modal{background:#fff;border-radius:18px;width:100%;max-width:440px;box-shadow:0 24px 80px rgba(0,0,0,0.2);animation:fadeUp .2s ease;overflow:hidden;}

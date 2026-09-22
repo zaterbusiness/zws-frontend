@@ -199,13 +199,13 @@ const handleBuyCredits = (planKey = selectedPack) => {
               </div>
               <div className="cp-unlock-desc">
                 {hasPaid
-                  ? 'Your ₹99 unlock payment is complete. Downloads and hosting are permanently free on all your projects.'
-                  : 'Pay ₹99 once to permanently unlock downloads and hosting. This is separate from credits.'}
+                  ? 'Your ₹49 unlock payment is complete. Downloads and hosting are permanently free on all your projects.'
+                  : 'Pay ₹49 once to permanently unlock downloads and hosting. This is separate from credits.'}
               </div>
             </div>
             {!hasPaid && (
               <button className="cp-unlock-btn" onClick={handleUnlock} disabled={buyingU}>
-               {buyingU ? <><Spin /> Redirecting to Razorpay...</> : '🔓 Pay ₹99 to Unlock'}
+               {buyingU ? <><Spin /> Redirecting to Razorpay...</> : '🔓 Pay ₹49 to Unlock'}
               </button>
             )}
           </div>

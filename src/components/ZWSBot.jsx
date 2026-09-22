@@ -148,7 +148,7 @@ Works for **templates**, **AI-generated websites**, and **full-stack apps**.`,
   response: `🌐 **Hosting on GitHub Pages — ₹99:**
 
 1. Click **"🐙 Host"** on any website template or project
-2. Pay ₹99 one-time
+2. Pay ₹49 one-time
 3. URL is created instantly
 4. ⏱️ Wait ~**2 minutes** for GitHub to activate
 5. Check status in **Deployments** page

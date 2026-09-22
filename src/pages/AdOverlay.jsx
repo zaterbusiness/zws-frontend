@@ -58,8 +58,15 @@ export default function AdOverlay() {
 
   if (!ready || !ad) return null
 
-  const imgSrc = ad.image_url
-    ? ad.image_url.startsWith('http') ? ad.image_url : `${API_BASE.replace('/api','')}${ad.image_url}`
+  // image_url can be:
+  //   - a full http(s) URL (external image)
+  //   - a base64 data URL, e.g. "data:image/png;base64,...."
+  //   - a legacy relative path like "/uploads/ads/xyz.png" (old records only)
+  const raw = ad.image_url || ''
+  const imgSrc = raw
+    ? (raw.startsWith('http') || raw.startsWith('data:'))
+      ? raw
+      : `${API_BASE.replace('/api', '')}${raw}`
     : null
 
   return (
@@ -86,7 +93,12 @@ export default function AdOverlay() {
         {/* Image */}
         {imgSrc && (
           <div className="zad-img-wrap">
-            <img src={imgSrc} alt={ad.title} className="zad-img" />
+            <img
+              src={imgSrc}
+              alt={ad.title || 'Advertisement'}
+              className="zad-img"
+              onError={(e) => { e.currentTarget.parentElement.style.display = 'none' }}
+            />
             <div className="zad-img-fade" />
           </div>
         )}
@@ -139,42 +151,6 @@ const OVERLAY_CSS = `
 }
 
 /* Card */
-.zad-card {
-  position: fixed;
-  inset: 0;
-  z-index: 9001;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  pointer-events: none;
-}
-.zad-card--in {
-  pointer-events: auto;
-}
-
-/* Inner box */
-.zad-card > *:not(.zad-close) {
-  /* handled per element */
-}
-.zad-card {
-  /* re-use as positioning wrapper; actual box below */
-}
-
-/* We wrap everything in an inner container */
-.zad-backdrop + .zad-card {
-  /* nothing extra */
-}
-
-/* Build the actual white box via a pseudo-wrapper trick — easier to just
-   make the card itself the box and use flex on the overlay */
-
-.zad-card {
-  /* override: make this the OVERLAY layer, not the box */
-}
-
-/* ─── Rewrite: use a wrapper div approach ─────────────────────────────────── */
-/* The .zad-card IS the centered box */
 .zad-card {
   position: fixed;
   top: 50%;

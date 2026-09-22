@@ -62,16 +62,7 @@ const openAnalytics = async (p) => {
   }
 
   // ── Regenerate ───────────────────────────────────────────
-  const openRegen = (p) => { setRegenModal(p); setRegenPrompt(p.prompt) }
-  const startRegen = async () => {
-    setRegenBusy(true)
-    try {
-      await api.post(`/projects/${regenModal.id}/regenerate`, { prompt: regenPrompt.trim() })
-      setRegenModal(null)
-      navigate(`/project/${regenModal.id}`)
-    } catch (err) { setError(err.message) }
-    finally { setRegenBusy(false) }
-  }
+ 
 
   // ── Delete ───────────────────────────────────────────────
  const confirmDelete = async () => {
@@ -428,7 +419,7 @@ const CSS = `
 .pp-back{background:none;border:none;font-size:13px;font-weight:700;color:#6b6b7a;cursor:pointer;padding:6px 10px;border-radius:8px;font-family:'Nunito',sans-serif;transition:all .18s;}
 .pp-back:hover{background:#f0f0f6;color:#0a0a12;}
 @media(max-width:600px){
-  .pj-grid{grid-template-columns:1fr 1fr;gap:12px;}
+  .pj-grid{grid-template-columns:1fr 1fr;gap:12px;} 
   .pj-card{padding:14px;gap:9px;}
   .pj-card-title{font-size:14px;}
   .pj-card-prompt{font-size:11px;padding:7px 9px;}
