@@ -58,7 +58,7 @@ Built by **Vaishiva** · Powered by **Claude Opus 4.8**`,
 ✅ 100 credits on signup (1 free AI generation)
 ✅ Preview all sites
 
-💾 **Download & Hosting** — ₹99 one-time
+💾 **Download & Hosting** — ₹49 one-time
 💰 Extra credits — ₹99 = 100 credits
 
 🚧 Full-stack app generation — Coming Soon (websites only for now)`,
@@ -145,7 +145,7 @@ Works for **templates**, **AI-generated websites**, and **full-stack apps**.`,
   {
   id: 'hosting_free',
   patterns: ['host','hosting','deploy','live','publish','go live','github pages','how to host','host free','free hosting','website live','github deploy','deploy free','get live url','download hosting','host cost','₹99 hosting'],
-  response: `🌐 **Hosting on GitHub Pages — ₹99:**
+  response: `🌐 **Hosting on GitHub Pages — ₹49:**
 
 1. Click **"🐙 Host"** on any website template or project
 2. Pay ₹49 one-time
@@ -495,7 +495,7 @@ const WELCOME = {
   role: 'assistant',
   content: `👋 Hi! I'm **ZWS Bot** — instant help for **Zater Web Studio**!
 
-🎨 Free templates · ⚡ AI website generation · 💾 Download & Host ₹99
+🎨 Free templates · ⚡ AI website generation · 💾 Download & Host ₹49
 
 🚧 Full-stack app generation coming soon!
 

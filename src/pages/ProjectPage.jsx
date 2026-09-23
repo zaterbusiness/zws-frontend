@@ -44,6 +44,16 @@ const [currentStep, setCurrentStep] = useState('')
 
  // 'laptop' | 'mobile'
 const [device, setDevice] = useState('mobile')
+const [scrolledDown, setScrolledDown] = useState(false)
+
+const handleScrollToggle = () => {
+  if (!scrolledDown) {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  setScrolledDown(s => !s)
+}
   const fetchProject = useCallback(async () => {
     try {
       const d = await api.get(`/projects/${id}`)
@@ -113,6 +123,13 @@ useEffect(() => {
       setEditOpen(false); setSuccess('Title updated!')
     } catch (err) { setError(err.message) }
     finally { setEditSaving(false) }
+  }
+
+  // Apply custom code (preview only, no backend save)
+  const applyCustomCode = () => {
+    if (!customCode.trim()) return
+    setProject(p => ({ ...p, generated_html: customCode }))
+    setSuccess('✅ Preview updated with your custom code.')
   }
 
   // Regenerate
@@ -577,6 +594,32 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
           />
         </div>
       </div>
+
+      <button
+        className="pp-customize-toggle"
+        onClick={() => {
+          if (!customizeOpen) setCustomCode(project.generated_html)
+          setCustomizeOpen(o => !o)
+        }}
+      >
+        {customizeOpen ? '▲ Hide Custom Code' : '▼ Customize Code'}
+      </button>
+
+      {customizeOpen && (
+        <div className="pp-customize-panel">
+          <textarea
+            className="pp-code-textarea"
+            value={customCode}
+            onChange={e => setCustomCode(e.target.value)}
+            spellCheck={false}
+          />
+          <div className="pp-customize-actions">
+            <button className="pp-customize-apply" onClick={applyCustomCode}>
+              Apply to Preview
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )}
 
@@ -695,6 +738,16 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
             </div>
           </div>
         )}
+
+        {/* Mobile-only scroll toggle arrow — shows "Customize Code" caption, gentle idle pulse */}
+        <button
+          className="pp-scroll-fab"
+          onClick={handleScrollToggle}
+          aria-label={scrolledDown ? 'Scroll to top' : 'Scroll to bottom'}
+        >
+          <span className="pp-scroll-fab-arrow">{scrolledDown ? '↑' : '↓'}</span>
+          <span className="pp-scroll-fab-caption">Customize Code</span>
+        </button>
       </div>
     </>
   )
@@ -740,6 +793,10 @@ const CSS = `
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fabPulse{
+  0%,100%{ transform:translateY(0) scale(1); box-shadow:0 4px 16px rgba(0,0,0,0.25); }
+  50%{ transform:translateY(-4px) scale(1.04); box-shadow:0 8px 22px rgba(192,57,43,0.35); }
+}
 
 .pp-root{min-height:100vh;background:#fff;font-family:'Nunito',sans-serif;color:#0a0a12;}
 .pp-fullscreen{position:fixed;inset:0;z-index:9999;background:#fff;}
@@ -879,6 +936,32 @@ const CSS = `
 .pp-customize-actions{display:flex;justify-content:flex-end;}
 .pp-customize-apply{padding:8px 16px;border-radius:8px;background:#22c55e;border:none;color:#fff;font-size:12.5px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:opacity .15s;}
 .pp-customize-apply:hover{opacity:.88;}
+.pp-scroll-fab{
+  display:none;
+  position:fixed;
+  bottom:18px;
+  right:18px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  width:64px;
+  height:64px;
+  border-radius:18px;
+  background:#0a0a12;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+  z-index:500;
+  box-shadow:0 4px 16px rgba(0,0,0,0.25);
+  animation:fabPulse 2.2s ease-in-out infinite;
+}
+.pp-scroll-fab-arrow{font-size:18px;font-weight:800;line-height:1;}
+.pp-scroll-fab-caption{font-size:8.5px;font-weight:700;font-family:'Nunito',sans-serif;letter-spacing:.2px;text-align:center;line-height:1.1;}
+.pp-scroll-fab:active{ animation:none; transform:scale(0.92); }
+@media(max-width:700px){
+  .pp-scroll-fab{ display:flex; }
+}
 @media(max-width:700px){
   .pp-layout{
     grid-template-columns:1fr;

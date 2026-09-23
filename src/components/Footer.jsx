@@ -38,7 +38,7 @@ export default function Footer() {
                   <span>💾</span>
                   <div>
                     <div className="ft-price-name">Download</div>
-                    <div className="ft-price-val">₹99</div>
+                    <div className="ft-price-val">₹49</div>
                   </div>
                 </div>
               </div>
@@ -235,7 +235,7 @@ const SOCIALS = [
 
 const STATS = [
   { num: '50', label: 'Sites Built' },
-  { num: '10',  label: 'Happy Users' },
+  { num: '20',  label: 'Happy Users' },
   { num: '< 1Min',   label: 'Generation Time' },
   { num: '99.9%',   label: 'Uptime' },
 ]

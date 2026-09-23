@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import zaterLogo from '../assets/zater-logo.jpeg'
@@ -18,6 +18,7 @@ const [mode,     setMode]     = useState('password') // 'password' | 'otp'
   const [otpLoading, setOtpLoading] = useState(false)
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   const hasGoogle = !!(clientId && !clientId.includes('your_google'))
+const googleBtnRef = useRef(null)
 
   // Load Google SDK and render button
   useEffect(() => {
@@ -35,6 +36,13 @@ const [mode,     setMode]     = useState('password') // 'password' | 'otp'
       window.google.accounts.id.renderButton(
         document.getElementById('g-btn'),
         { theme:'outline', size:'large', width:'356', text:'signin_with', shape:'rectangular', logo_alignment:'left' }
+      )
+      const width = googleBtnRef.current
+       ? Math.min(googleBtnRef.current.offsetWidth, 400)
+       : 356
+      window.google.accounts.id.renderButton(
+        googleBtnRef.current,
+        { theme:'outline', size:'large', width, text:'signin_with', shape:'rectangular', logo_alignment:'center' }
       )
     }
     document.head.appendChild(script)
@@ -109,7 +117,7 @@ const handleResend = async () => {
           {hasGoogle && (
             <>
               <div className="auth-google-box">
-                <div id="g-btn" style={{width:'100%'}}/>
+                <div id="g-btn" ref={googleBtnRef} style={{width:'100%'}}/>
                 {gLoading && (
                   <div className="auth-g-loading"><Spin color="#4285f4"/> Signing in with Google...</div>
                 )}

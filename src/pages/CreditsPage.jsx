@@ -234,7 +234,7 @@ const handleBuyCredits = (planKey = selectedPack) => {
               <div className="cp-journey-step">
                 <div className={`cp-journey-num ${hasPaid ? 'done' : ''}`}>3</div>
                 <div className="cp-journey-content">
-                  <div className="cp-journey-label">Pay ₹99 — Unlock Download & Hosting</div>
+                  <div className="cp-journey-label">Pay ₹49 — Unlock Download & Hosting</div>
                   <div className="cp-journey-desc">
                     This <strong>does not add credits</strong>. It permanently unlocks download &amp; hosting for all your projects forever.
                   </div>
@@ -272,7 +272,7 @@ const handleBuyCredits = (planKey = selectedPack) => {
               <div className="cp-how-item">
                 <div className="cp-how-icon" style={{ background: 'rgba(245,158,11,0.1)', color: '#d97706' }}>🔓</div>
                 <div className="cp-how-name">Unlock Payment</div>
-                <div className="cp-how-val" style={{ color: '#d97706' }}>₹99 once</div>
+                <div className="cp-how-val" style={{ color: '#d97706' }}>₹49 once</div>
                 <div className="cp-how-desc">Unlocks download &amp; hosting permanently. No credits added.</div>
               </div>
               <div className="cp-how-item">
