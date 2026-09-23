@@ -906,7 +906,7 @@ const removeLogo = () => {
           {/* ══ PRICING ══ */}
           <div className="h-pricing-wrap">
             <div className="h-pricing-title">
-              {mode === 'website' ? '⚡ Generate & preview free — download & host for ₹99' : 'What gets generated'}
+              {mode === 'website' ? '⚡ Generate & preview free — download & host for ₹49' : 'What gets generated'}
             </div>
             {mode === 'website' ? (
               <>
@@ -936,12 +936,12 @@ const removeLogo = () => {
                   </div>
                   <div className="h-step-arrow">→</div>
                   <div className="h-step-card h-step-featured" style={{borderColor:'#f59e0b',boxShadow:'0 6px 24px rgba(245,158,11,0.15)'}}>
-                    <div className="h-step-badge" style={{background:'#f59e0b'}}>₹99</div>
+                    <div className="h-step-badge" style={{background:'#f59e0b'}}>₹49</div>
                     <div className="h-step-num" style={{background:'#f59e0b',color:'#fff'}}>3</div>
                     <div className="h-step-icon">💾</div>
                     <div className="h-step-name">Download & Host</div>
-                    <div className="h-step-price" style={{color:'#f59e0b'}}>₹99</div>
-                    <div className="h-step-desc">Download your website or host on GitHub Pages — just ₹99 one-time.</div>
+                    <div className="h-step-price" style={{color:'#f59e0b'}}>₹49</div>
+                    <div className="h-step-desc">Download your website or host on GitHub Pages — just ₹49 one-time.</div>
                     <div className="h-step-perks">
                       <div className="h-step-perk">✅ Full HTML + CSS + JS</div>
                       <div className="h-step-perk">✅ Host on GitHub Pages</div>
@@ -950,7 +950,7 @@ const removeLogo = () => {
                   </div>
                 </div>
                 <div className="h-what-box">
-                  <div className="h-what-title">🎯 What you get (download ₹99)</div>
+                  <div className="h-what-title">🎯 What you get (download ₹49)</div>
                   <div className="h-what-grid">
                     <div className="h-what-item"><span>💻</span> Single HTML file</div>
                     <div className="h-what-item"><span>🎨</span> All CSS included</div>
@@ -1002,7 +1002,7 @@ const removeLogo = () => {
                   </div>
                 </div>
                 <div className="h-what-box" style={{borderColor:'rgba(91,79,255,0.2)',background:'rgba(91,79,255,0.03)'}}>
-                  <div className="h-what-title">🎯 What you get (download ₹99)</div>
+                  <div className="h-what-title">🎯 What you get (download ₹49)</div>
                   <div className="h-what-grid">
                     <div className="h-what-item"><span>⚛️</span> React App.jsx</div>
                     <div className="h-what-item"><span>🖥️</span> server.js (Node/Express)</div>
@@ -1267,7 +1267,7 @@ const removeLogo = () => {
 const HOW_STEPS = [
   { icon: '✍️', title: 'Describe Your Website', desc: 'Type what you want in plain English — or pick a template. Be as detailed or brief as you like.' },
   { icon: '⚡', title: 'AI Builds It Instantly', desc: 'Claude Opus 4.8 writes your full website — HTML, CSS, and JS — in under 30 seconds.' },
-  { icon: '💾', title: 'Download & Host — Free', desc: 'Your website is ready! Download it or host on GitHub Pages — both are completely free, no payment needed.' },
+  { icon: '💾', title: 'Download & Host — 49', desc: 'Your website is ready! Download it or host on GitHub Pages just 49' },
 ]
 
 const Spin = () => (
