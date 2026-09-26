@@ -45,6 +45,19 @@ const [currentStep, setCurrentStep] = useState('')
  // 'laptop' | 'mobile'
 const [device, setDevice] = useState('mobile')
 const [scrolledDown, setScrolledDown] = useState(false)
+const [codeOpen, setCodeOpen] = useState(false)
+const [codeCopied, setCodeCopied] = useState(false)
+
+const copyGeneratedCode = async () => {
+  try {
+    await navigator.clipboard.writeText(project?.generated_html || '')
+    setCodeCopied(true)
+    setTimeout(() => setCodeCopied(false), 1800)
+  } catch {
+    setError('Could not copy — try selecting the code manually.')
+  }
+}
+
 
 const handleScrollToggle = () => {
   if (!scrolledDown) {
@@ -290,9 +303,11 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
   const isGenerating = project?.status === 'generating'
   const isReady      = project?.status === 'ready'
   const isFailed     = project?.status === 'failed'
-  const isGithub     = !!project?.github_url
+const isGithub     = !!project?.github_url
+const isTemplate   = !!project?.template_id || project?.is_template === 1 || !project?.prompt || project?.prompt?.length === 0
+const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
   // Download & hosting are FREE for everyone — templates AND AI-generated sites
-  const isTemplate   = !!project?.template_id || project?.is_template === 1 || !project?.prompt || project?.prompt?.length === 0
+
 
   return (
     <>
@@ -567,11 +582,18 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
             title="Laptop view"
           >💻</button>
           <button
-            className={`pp-device-btn ${device === 'mobile' ? 'pp-device-active' : ''}`}
-            onClick={() => setDevice('mobile')}
-            title="Mobile view"
-          >📱</button>
-          <button className="pp-browser-btn" onClick={() => iframeRef.current?.contentWindow?.location?.reload?.()}>↻</button>
+  className={`pp-device-btn ${device === 'mobile' ? 'pp-device-active' : ''}`}
+  onClick={() => setDevice('mobile')}
+  title="Mobile view"
+>📱</button>
+{canViewCode && (
+  <button
+    className="pp-device-btn"
+    onClick={() => setCodeOpen(true)}
+    title="View Code"
+  >{'</>'}</button>
+)}
+<button className="pp-browser-btn" onClick={() => iframeRef.current?.contentWindow?.location?.reload?.()}>↻</button>
           <button className="pp-browser-btn" onClick={() => setFullscreen(f => !f)}>{isFullscreen ? '⊡' : '⛶'}</button>
         </div>
       </div>
@@ -594,16 +616,17 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
           />
         </div>
       </div>
-
-      <button
-        className="pp-customize-toggle"
-        onClick={() => {
-          if (!customizeOpen) setCustomCode(project.generated_html)
-          setCustomizeOpen(o => !o)
-        }}
-      >
-        {customizeOpen ? '▲ Hide Custom Code' : '▼ Customize Code'}
-      </button>
+{isReady && (
+  <button
+    className="pp-download-hint"
+    onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+  >
+    <span className="pp-download-hint-arrow">↓</span>
+    <span className="pp-download-hint-label">Customize Your website</span>
+  </button>
+)}
+     
+     
 
       {customizeOpen && (
         <div className="pp-customize-panel">
@@ -738,7 +761,24 @@ const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG
             </div>
           </div>
         )}
-
+{codeOpen && (
+  <div className="pp-overlay" onClick={() => setCodeOpen(false)}>
+    <div className="pp-modal pp-modal-lg" onClick={e => e.stopPropagation()}>
+      <div className="pp-modal-hdr">
+        <span className="pp-modal-title">{'</>'} Website Code</span>
+        <button className="pp-modal-x" onClick={() => setCodeOpen(false)}>✕</button>
+      </div>
+      <div className="pp-modal-body">
+        <pre className="pp-code-view">
+          <code>{project?.generated_html}</code>
+        </pre>
+        <button className="pp-customize-apply" onClick={copyGeneratedCode}>
+          {codeCopied ? '✅ Copied!' : '📋 Copy Code'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
         {/* Mobile-only scroll toggle arrow — shows "Customize Code" caption, gentle idle pulse */}
         <button
           className="pp-scroll-fab"
@@ -959,6 +999,58 @@ const CSS = `
 .pp-scroll-fab-arrow{font-size:18px;font-weight:800;line-height:1;}
 .pp-scroll-fab-caption{font-size:8.5px;font-weight:700;font-family:'Nunito',sans-serif;letter-spacing:.2px;text-align:center;line-height:1.1;}
 .pp-scroll-fab:active{ animation:none; transform:scale(0.92); }
+@keyframes bounceArrow{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(8px); }
+}
+.pp-download-hint{
+  display:none;
+  position:absolute;
+  bottom:14px;
+  left:50%;
+  transform:translateX(-50%);
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  background:#0a0a12;
+  color:#fff;
+  padding:8px 16px;
+  border-radius:14px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.25);
+  z-index:50;
+  border:none;          /* was missing, needed since it's now a <button> */
+  cursor:pointer;       /* new */
+}
+.pp-download-hint-arrow{
+  font-size:16px;
+  font-weight:800;
+  line-height:1;
+  animation:bounceArrow 1.1s ease-in-out infinite;
+}
+.pp-download-hint-label{
+  font-size:10px;
+  font-weight:700;
+  font-family:'Nunito',sans-serif;
+  letter-spacing:.2px;
+  white-space:nowrap;
+}
+@media(max-width:700px){
+  .pp-download-hint{ display:flex; }
+}
+.pp-code-view{
+  max-height:55vh;
+  overflow:auto;
+  background:#14141c;
+  color:#e2e2ea;
+  border:1px solid #2a2a36;
+  border-radius:8px;
+  padding:14px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  line-height:1.6;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
 @media(max-width:700px){
   .pp-scroll-fab{ display:flex; }
 }

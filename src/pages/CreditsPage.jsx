@@ -180,35 +180,52 @@ const handleBuyCredits = (planKey = selectedPack) => {
   })}
 </div>
 
-  <button className="cp-buy-btn" onClick={() => handleBuyCredits()} disabled={buyingC}>
-    {buyingC
-      ? <><Spin /> Redirecting to Razorpay...</>
-      : <>💳 Buy {PACKS.find(p => p.key === selectedPack)?.credits} Credits — ₹{PACKS.find(p => p.key === selectedPack)?.price}</>}
-  </button>
+ <div className="cp-buy-perks-mini">
+  <span>✅ Download full ZIP</span>
+  <span>✅ Auto deploy with URL in minutes</span>
+  <span>✅ Free custom code</span>
+  <span>✅ Custom domain name</span>
+</div>
+
+<button className="cp-buy-btn" onClick={() => handleBuyCredits()} disabled={buyingC}>
+  {buyingC
+    ? <><Spin /> Redirecting to Razorpay...</>
+    : <>💳 Buy {PACKS.find(p => p.key === selectedPack)?.credits} Credits — ₹{PACKS.find(p => p.key === selectedPack)?.price}</>}
+</button>
 </div>
 
           {/* Download & Hosting Lock Status */}
-          <div className="cp-unlock-card" style={{
-            borderColor: hasPaid ? '#15803d' : '#d97706',
-            background:  hasPaid ? 'rgba(34,197,94,0.06)' : 'rgba(245,158,11,0.06)',
-          }}>
-            <div className="cp-unlock-icon">{hasPaid ? '🔓' : '🔒'}</div>
-            <div className="cp-unlock-body">
-              <div className="cp-unlock-title" style={{ color: hasPaid ? '#15803d' : '#b45309' }}>
-                {hasPaid ? 'Download & Hosting — Unlocked Forever' : 'Download & Hosting — Locked'}
-              </div>
-              <div className="cp-unlock-desc">
-                {hasPaid
-                  ? 'Your ₹49 unlock payment is complete. Downloads and hosting are permanently free on all your projects.'
-                  : 'Pay ₹49 once to permanently unlock downloads and hosting. This is separate from credits.'}
-              </div>
-            </div>
-            {!hasPaid && (
-              <button className="cp-unlock-btn" onClick={handleUnlock} disabled={buyingU}>
-               {buyingU ? <><Spin /> Redirecting to Razorpay...</> : '🔓 Pay ₹49 to Unlock'}
-              </button>
-            )}
-          </div>
+          {/* Download & Hosting Lock Status */}
+<div className="cp-unlock-card" style={{
+  borderColor: hasPaid ? '#15803d' : '#d97706',
+  background:  hasPaid ? 'rgba(34,197,94,0.06)' : 'rgba(245,158,11,0.06)',
+}}>
+  <div className="cp-unlock-icon">{hasPaid ? '🔓' : '🔒'}</div>
+  <div className="cp-unlock-body">
+    <div className="cp-unlock-title" style={{ color: hasPaid ? '#15803d' : '#b45309' }}>
+      {hasPaid ? 'Download & Hosting — Unlocked Forever' : 'Unlock Download & Hosting — ₹49, Pay Once'}
+    </div>
+    <div className="cp-unlock-desc">
+      {hasPaid
+        ? 'Your ₹49 unlock payment is complete. Downloads and hosting are permanently free on all your projects.'
+        : 'Pay ₹49 once — lifetime, unlimited. Unlocks ALL your websites forever.'}
+    </div>
+    {!hasPaid && (
+      <div className="cp-unlock-perks">
+        <span>✅ Download full ZIP</span>
+        <span>✅ Auto deploy with URL in minutes</span>
+        <span>✅ Free custom code</span>
+        <span>✅ Custom domain name</span>
+        <span>✅ Unlocks all projects forever</span>
+      </div>
+    )}
+  </div>
+  {!hasPaid && (
+    <button className="cp-unlock-btn" onClick={handleUnlock} disabled={buyingU}>
+      {buyingU ? <><Spin /> Redirecting to Razorpay...</> : '🔓 Pay ₹49 to Unlock'}
+    </button>
+  )}
+</div>
 
           {/* How Credits Work */}
           <div className="cp-how-card">
@@ -415,8 +432,10 @@ const CSS = `
 .cp-unlock-btn{padding:10px 18px;border-radius:10px;background:#d97706;border:none;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .18s;}
 .cp-unlock-btn:hover:not(:disabled){opacity:.88;transform:translateY(-1px);}
 .cp-unlock-btn:disabled{background:#9a9aaa;cursor:not-allowed;}
-
-
+.cp-unlock-perks{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.cp-unlock-perks span{font-size:11px;font-weight:700;color:#b45309;background:rgba(217,119,6,0.1);padding:4px 10px;border-radius:6px;}
+.cp-buy-perks-mini{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:14px;}
+.cp-buy-perks-mini span{font-size:11px;font-weight:700;color:#c0392b;background:rgba(192,57,43,0.08);padding:4px 10px;border-radius:6px;}
 .cp-pack-picker{display:flex;gap:14px;margin:18px 0;justify-content:center;flex-wrap:wrap;}
 
 .cp-pack-option{

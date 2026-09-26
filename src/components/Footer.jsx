@@ -234,7 +234,7 @@ const SOCIALS = [
 
 
 const STATS = [
-  { num: '50', label: 'Sites Built' },
+  { num: '100', label: 'Sites Built' },
   { num: '20',  label: 'Happy Users' },
   { num: '< 1Min',   label: 'Generation Time' },
   { num: '99.9%',   label: 'Uptime' },
