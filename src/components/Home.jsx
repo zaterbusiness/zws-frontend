@@ -1014,7 +1014,7 @@ const removeLogo = () => {
                 </div>
               </>
             )}
-            <p className="h-pricing-note">✅ Generate & preview are free. Download & hosting is ₹99. Credits only required for generation.</p>
+            <p className="h-pricing-note">✅ Generate & preview are free. Download & hosting is ₹49. Credits only required for generation.</p>
           </div>
 
           {/* ══ CUSTOM DEVELOPMENT OPTION ══ */}
