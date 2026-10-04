@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import zaterLogo from '../assets/zater-logo.jpeg'
 
-const TABS = ['dashboard','users','apps','projects','templates','payments','credits','ads','analytics']
-const TAB_ICONS = { dashboard:'📊', users:'👥', apps:'⚛️', projects:'🌐', templates:'🧩', payments:'💳', credits:'🪙', ads:'📢', analytics:'📈' }
+const TABS = ['dashboard','users','apps','projects','edits','templates','payments','credits','ads','analytics']
+const TAB_ICONS = { dashboard:'📊', users:'👥', apps:'⚛️', projects:'🌐', edits:'✏️', templates:'🧩', payments:'💳', credits:'🪙', ads:'📢', analytics:'📈' }
 const adminApi = {
   base: () => import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: () => ({ 'Content-Type':'application/json', Authorization:`Bearer ${localStorage.getItem('zater_admin_token')||''}` }),
@@ -77,6 +77,13 @@ const [appsSearch,setAppsSearch] = useState('')
 const [appsTotal,setAppsTotal]   = useState(0)
 const [pushingGit,setPushingGit] = useState(null)
 
+const [edits,setEdits]     = useState([])
+const [eSearch,setESearch] = useState('')
+const [eTotal,setETotal]   = useState(0)
+const [eStats,setEStats]   = useState({totalEdits:0,totalUsers:0,totalProjects:0,totalCredits:0})
+const [openEdit,setOpenEdit] = useState(null)   // row id with full prompt expanded
+
+
   const handleLogin = async (e) => {
     e.preventDefault(); setLoginLoad(true); setLoginErr('')
     try {
@@ -116,6 +123,10 @@ const load = useCallback(async (t=tab) => {
     else if (t==='users') { const d=await adminApi.get(`/admin/users?search=${encodeURIComponent(uSearch)}&page=1`); setUsers(d.users||[]); setUTotal(d.total||0) }
     else if (t==='projects') { const d=await adminApi.get(`/admin/projects?search=${encodeURIComponent(pSearch)}&status=${pStatus}`); setProj(d.projects||[]); setPTotal(d.total||0) }
     else if (t==='templates') { const d=await adminApi.get(`/admin/templates?search=${encodeURIComponent(tSearch)}&page=1`); setTemplates(d.deployments||[]); setTTotal(d.total||0); setTStats({totalDeployments:d.totalDeployments||0,totalDeployedUsers:d.totalDeployedUsers||0}) }
+    else if (t==='edits') {
+  const d = await adminApi.get(`/admin/edits?search=${encodeURIComponent(eSearch)}&page=1`)
+  setEdits(d.edits||[]); setETotal(d.total||0); setEStats(d.stats||{})
+}
     else if (t==='payments') { const d=await adminApi.get('/admin/payments'); setPaym(d.payments||[]); setPayRev(d.revenue||0) }
     else if (t==='credits') {
       const d = await adminApi.get(`/admin/credits/users?search=${encodeURIComponent(creditSearch)}`)
@@ -135,7 +146,7 @@ const load = useCallback(async (t=tab) => {
     }
     setError(msg)
   } finally { setLoading(false) }
-},[tab,uSearch,pSearch,pStatus,tSearch])
+},[tab,uSearch,pSearch,pStatus,tSearch,eSearch])
 
   useEffect(()=>{ if(isLoggedIn) load(tab) },[tab,isLoggedIn])
 
@@ -601,6 +612,83 @@ const load = useCallback(async (t=tab) => {
             </div>
           )}
 
+
+{/* ═══ EDITS ═══ */}
+{tab==='edits'&&(
+  <div className="adm-content">
+    <div className="adm-tpl-summary" style={{gridTemplateColumns:'repeat(4,1fr)'}}>
+      {[
+        {icon:'✏️',val:fmt(eStats.totalEdits),lbl:'Total Edits',c:'#5b4fff'},
+        {icon:'👥',val:fmt(eStats.totalUsers),lbl:'Users Editing',c:'#22c55e'},
+        {icon:'🌐',val:fmt(eStats.totalProjects),lbl:'Sites Edited',c:'#f59e0b'},
+        {icon:'🪙',val:fmt(eStats.totalCredits),lbl:'Credits Used',c:'#c0392b'},
+      ].map((s,i)=>(
+        <div key={i} className="adm-tpl-stat" style={{'--tc':s.c}}>
+          <div className="adm-tpl-stat-icon">{s.icon}</div>
+          <div className="adm-tpl-stat-val">{s.val}</div>
+          <div className="adm-tpl-stat-lbl">{s.lbl}</div>
+        </div>
+      ))}
+    </div>
+
+    <div className="adm-toolbar">
+      <input className="adm-search" placeholder="Search title, edit prompt, user or email..."
+        value={eSearch} onChange={e=>setESearch(e.target.value)}
+        onKeyDown={e=>e.key==='Enter'&&load('edits')}/>
+      <button className="adm-filter-btn" onClick={()=>load('edits')}>Search</button>
+      <div className="adm-total">{fmt(eTotal)} edits</div>
+    </div>
+
+    <div className="adm-card adm-table-wrap" style={{padding:0}}>
+      {edits.length===0
+        ? <div className="adm-empty">No edits yet.</div>
+        : <table className="adm-table" style={{minWidth:760}}>
+            <thead>
+              <tr><th>Website</th><th>Edit Prompt</th><th>User</th><th>Credits</th><th>Date</th></tr>
+            </thead>
+            <tbody>
+              {edits.map(e=>{
+                const open = openEdit===e.id
+                return (
+                  <tr key={e.id} className="adm-tr-hover" onClick={()=>setOpenEdit(open?null:e.id)}>
+                    <td style={{maxWidth:220}}>
+                      <div className="adm-uname">{e.title||'Untitled'}</div>
+                      <span className="adm-edit-ver">v{e.version_no}</span>
+                      {e.deleted_at && <span className="adm-badge" style={{marginLeft:6,background:'rgba(220,38,38,0.1)',color:'#dc2626'}}>Deleted</span>}
+                      {open && e.original_prompt && (
+                        <div className="adm-edit-orig"><b>Original prompt:</b> {e.original_prompt}</div>
+                      )}
+                    </td>
+                    <td style={{maxWidth:340}}>
+                      <div className={open?'adm-edit-prompt adm-edit-prompt-open':'adm-edit-prompt'}>
+                        {e.edit_prompt}
+                      </div>
+                      {e.github_url && (
+                        <a href={e.github_url} target="_blank" rel="noopener noreferrer"
+                           className="adm-visit-btn" style={{marginTop:6}}
+                           onClick={ev=>ev.stopPropagation()}>🔗 Live version</a>
+                      )}
+                    </td>
+                    <td>
+                      <div className="adm-user-cell">
+                        <div className="adm-avatar">{e.user_avatar||'👤'}</div>
+                        <div>
+                          <div className="adm-uname">{e.user_name}</div>
+                          <div className="adm-uemail">{e.user_email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span className="adm-badge adm-badge-purple">🪙 {fmt(e.credits_used)}</span></td>
+                    <td style={{fontSize:11,color:'#a0a0b0',whiteSpace:'nowrap'}}>{fmtDt(e.created_at)}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+      }
+    </div>
+  </div>
+)}
           {/* ═══ PAYMENTS ═══ */}
          {/* ═══ PAYMENTS ═══ */}
 {tab==='payments'&&(
@@ -1031,7 +1119,17 @@ const CSS = `
 .al-back{display:block;text-align:center;margin-top:14px;background:none;border:none;color:#4a4a6a;font-size:13px;font-weight:600;cursor:pointer;font-family:'Nunito',sans-serif;}
 .al-back:hover{color:#a0a0c0;}
 .al-note{text-align:center;font-size:11px;color:#3a3a5a;font-weight:500;margin-top:10px;}
-
+/* ── EDITS TAB ── */
+.adm-edit-ver{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:100px;background:rgba(91,79,255,0.1);color:#5b4fff;font-size:10px;font-weight:800;}
+.adm-edit-prompt{font-size:12px;color:#3a3a4a;font-weight:600;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-style:italic;}
+.adm-edit-prompt-open{display:block;-webkit-line-clamp:unset;overflow:visible;}
+.adm-edit-orig{margin-top:8px;padding:8px 10px;background:#f8f8fc;border:1px solid #e8e8f2;border-radius:8px;font-size:11px;color:#72727f;font-weight:500;line-height:1.5;white-space:normal;}
+@media(max-width:768px){
+  .adm-content .adm-tpl-summary[style]{grid-template-columns:repeat(2,1fr)!important;}
+}
+@media(max-width:480px){
+  .adm-content .adm-tpl-summary[style]{grid-template-columns:1fr!important;}
+}
 /* ── BASE LAYOUT ── */
 .adm-root{display:grid;grid-template-columns:220px 1fr;min-height:100vh;background:#f4f4f8;font-family:'Nunito',sans-serif;color:#0a0a12;}
 .adm-sidebar{background:#0a0a12;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}

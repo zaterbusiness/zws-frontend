@@ -509,7 +509,59 @@ footer{background:#040404;border-top:1px solid #111;padding:60px;display:grid;gr
 .footer-col-links a:hover{color:var(--white);}
 .footer-bottom{background:#020202;padding:20px 60px;display:flex;justify-content:space-between;border-top:1px solid #0f0f0f;}
 .footer-copy{font-size:10px;color:rgba(245,245,240,0.2);letter-spacing:2px;}
-@media(max-width:900px){.hero{grid-template-columns:1fr;}.hero-right{height:50vh;}.products-grid{grid-template-columns:repeat(2,1fr);}.editorial{grid-template-columns:1fr;}.newsletter,.products{padding:60px 24px;}footer{grid-template-columns:1fr 1fr;padding:40px 24px;}}
+/* Tablet */
+@media(max-width:900px){
+.nav,.nav.scrolled{padding:16px 24px;}
+.nav-left,.nav-right-links{gap:20px;}
+.nav-center{font-size:22px;letter-spacing:8px;}
+.marquee-wrap{margin-top:64px;}
+.hero{grid-template-columns:1fr;min-height:auto;}
+.hero-left{padding:60px 24px;min-height:70vh;}
+.hero-right{height:55vh;}
+.hero-right-text{display:none;}
+.products,.newsletter{padding:60px 24px;}
+.products-header{margin-bottom:32px;}
+.products-grid{grid-template-columns:repeat(2,1fr);}
+.prod-img{height:320px;}
+.editorial{grid-template-columns:1fr;padding:60px 24px;min-height:auto;}
+.editorial-img{height:420px;}
+.editorial-text{padding:40px 0 0;}
+footer{grid-template-columns:1fr 1fr;padding:40px 24px;}
+.footer-bottom{padding:20px 24px;}
+}
+/* Phone */
+@media(max-width:600px){
+.nav,.nav.scrolled{grid-template-columns:1fr auto;padding:14px 20px;}
+.nav-left,.nav-right-links .nav-link{display:none;}
+.nav-center{grid-column:1;grid-row:1;text-align:left;font-size:20px;letter-spacing:6px;}
+.nav-right-links{grid-column:2;}
+.marquee-wrap{margin-top:56px;}
+.marquee-text{font-size:9px;letter-spacing:3px;padding:0 20px;}
+.hero-left{padding:48px 20px;min-height:60vh;}
+.hero-desc{font-size:11px;margin-bottom:32px;}
+.hero-btns{flex-direction:column;gap:12px;}
+.btn-gold,.btn-outline{width:100%;padding:14px 20px;}
+.hero-right{height:45vh;}
+.products,.newsletter,.editorial{padding:48px 16px;}
+.products-grid{gap:4px;}
+.prod-img{height:240px;}
+.prod-overlay{padding:12px;}
+.prod-name{font-size:14px;}
+.prod-add{padding:8px 14px;font-size:8px;}
+.editorial-img{height:320px;}
+.newsletter-sub{font-size:10px;letter-spacing:1px;}
+.newsletter-form{max-width:100%;}
+footer{grid-template-columns:1fr;gap:28px;padding:40px 20px;}
+.footer-bottom{flex-direction:column;gap:8px;padding:16px 20px;text-align:center;}
+}
+/* Touch devices: no custom cursor, no hover-only content */
+@media(hover:none){
+body,.btn-gold,.btn-outline,.prod-card,.prod-add,.newsletter-btn{cursor:auto;}
+.cursor,.cursor-follower{display:none;}
+.prod-overlay{background:linear-gradient(to top,rgba(8,8,8,0.85),transparent 60%);}
+.prod-info{transform:none;opacity:1;}
+.prod-add{opacity:1;}
+}
 </style>
 </head>
 <body>
@@ -2345,7 +2397,7 @@ function TemplCard({ tpl, onUse, onDownload }) {
 //  MAIN COMPONENT
 // ══════════════════════════════════════════════════════════════
 export default function TemplateGallery() {
-  const { user } = useAuth()
+  const { user, requireAuth } = useAuth()
   const navigate  = useNavigate()
 
   const [selected,   setSelected]   = useState(null)
@@ -2363,8 +2415,10 @@ export default function TemplateGallery() {
   const closeModal = () => { setModal(false); setSelected(null) }
 
   // ── Download HTML file ────────────────────────────────────
-  const handleDownload = (tpl) => {
-    const blob = new Blob([tpl.fullHtml || tpl.preview], { type: 'text/html' })
+ const handleDownload = (tpl) => {
+  if (!user) { requireAuth(); return }   // ← ADD
+  const blob = new Blob([tpl.fullHtml || tpl.preview], { type: 'text/html' })
+  // ...rest unchanged
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
     a.href = url; a.download = `${tpl.id}-zws-template.html`; a.click()
@@ -2375,7 +2429,7 @@ export default function TemplateGallery() {
 // Replace your existing handleDeploy function with this complete version.
 // ─────────────────────────────────────────────────────────────────────────────
 const handleDeploy = async (tpl) => {
-  if (!user) { navigate('/login'); return }
+  if (!user) { requireAuth(); return }
   setDeploying(true); setErr(''); setSuccess(''); setDeployUrl('')
 
   try {
@@ -2542,8 +2596,8 @@ const handleDeploy = async (tpl) => {
               <div className="tg-choice tg-choice-light" onClick={() => handleDownload(selected)}>
                 <div className="tg-choice-icon-wrap">📦</div>
                 <div className="tg-choice-title">Download HTML File</div>
-                <div className="tg-choice-free">FREE — No signup needed</div>
-                <ul className="tg-choice-list">
+                <div className="tg-choice-free">FREE — Login required</div>
+<ul className="tg-choice-list">
                   <li>✅ Complete HTML + CSS + JavaScript</li>
                   <li>✅ All images & animations included</li>
                   <li>✅ Edit in VS Code or Notepad</li>
@@ -2664,7 +2718,10 @@ const CSS = `
 
 /* TOAST */
 .tg-toast{max-width:1100px;margin:16px auto 0;background:rgba(34,197,94,0.12);border:1.5px solid rgba(34,197,94,0.3);border-radius:12px;padding:14px 20px;font-size:13px;font-weight:700;color:#22c55e;text-align:center;cursor:pointer;font-family:'Nunito',sans-serif;}
-
+.h-nav-login{padding:7px 14px;border-radius:8px;background:transparent;border:1.5px solid #e2e2ea;font-size:13px;font-weight:700;color:#3a3a4a;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .18s;}
+.h-nav-login:hover{border-color:#c0392b;color:#c0392b;}
+.h-nav-signup{padding:8px 16px;border-radius:8px;background:#c0392b;border:none;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 2px 10px rgba(192,57,43,0.3);transition:all .18s;}
+.h-nav-signup:hover{opacity:.88;}
 /* MODAL */
 @keyframes tgIn{from{opacity:0;transform:translateY(18px) scale(0.97)}to{opacity:1;transform:none}}
 .tg-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(8px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;}

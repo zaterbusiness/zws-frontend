@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+
 import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Footer from './components/Footer'
@@ -30,11 +30,14 @@ import CreditsInfoPage from './pages/CreditsInfoPage'
 import { DocsPage, StatusPage, BugReportPage } from './pages/SupportPages'
 import PaymentCallback from './components/PaymentCallback'
 // ...
-
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 const PublicOnly = ({ children }) => {
   const { user, loading } = useAuth()
-  if (loading) return null
-  return user ? <Navigate to="/" replace /> : children
+  const location = useLocation()
+  if (loading) return (
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center' }}>Loading…</div>
+  )
+  return user ? <Navigate to={location.state?.from || '/'} replace /> : children
 }
 
 const WithFooter = ({ children }) => (
@@ -47,6 +50,12 @@ const WithFooter = ({ children }) => (
 function AppRoutes() {
   return (
     <Routes>
+      {/* ── Public home ── */}
+<Route path="/" element={<Home />} />
+
+{/* ── Protected user routes ── */}
+<Route path="/apps"    element={<ProtectedRoute><WithFooter><AppsPage /></WithFooter></ProtectedRoute>} />
+<Route path="/app/:id" element={<ProtectedRoute><AppPage /></ProtectedRoute>} />
       {/* ── Public auth ── */}
       <Route path="/login"           element={<PublicOnly><Login /></PublicOnly>} />
       <Route path="/signup"          element={<PublicOnly><Signup /></PublicOnly>} />
@@ -58,12 +67,12 @@ function AppRoutes() {
       <Route path="/admin"       element={<AdminPage />} />
 
       {/* ── Protected user routes ── */}
-      <Route path="/"            element={<ProtectedRoute><Home /></ProtectedRoute>} />
+     
       <Route path="/projects"    element={<ProtectedRoute><WithFooter><ProjectsPage /></WithFooter></ProtectedRoute>} />
       <Route path="/payments"    element={<ProtectedRoute><WithFooter><PaymentsPage /></WithFooter></ProtectedRoute>} />
       <Route path="/project/:id" element={<ProtectedRoute><ProjectPage /></ProtectedRoute>} />
-      <Route path="/apps"        element={<ProtectedRoute><WithFooter><AppsPage /></WithFooter></ProtectedRoute>} />
-      <Route path="/app/:id"     element={<ProtectedRoute><AppPage /></ProtectedRoute>} />
+      
+      
       <Route path="/settings"    element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path="/credits"     element={<ProtectedRoute><CreditsPage /></ProtectedRoute>} />
 

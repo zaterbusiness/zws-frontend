@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 const DEVICE_SIZES = {
   laptop: { width: 1280, height: 800 },
-  mobile: { width: 375,  height: 667 },
+  mobile: { width: 375,  height: 600 },
 }
 export default function ProjectPage() {
   const { id }    = useParams()
@@ -15,7 +15,7 @@ const [answersLoading, setAnswersLoading]= useState(false)
 const iframeRef = useRef(null)
 const wrapRef   = useRef(null)
 const [scale, setScale] = useState(1)
-
+const [customAns, setCustomAns] = useState({})   // { q1: 'typed text' }
   const [project,     setProject]    = useState(null)
   const [loading,     setLoading]    = useState(true)
   // paying state removed — download & hosting are free, no payment flow
@@ -30,7 +30,10 @@ const [customizeOpen, setCustomizeOpen] = useState(false)
 const [customCode, setCustomCode] = useState('')
   // GitHub deploy state
   const [ghDeploying, setGhDeploying]= useState(false)
-
+const [eqOpen,    setEqOpen]    = useState(false)
+const [eqList,    setEqList]    = useState([])
+const [eqAnswers, setEqAnswers] = useState({})   // { q1: 'option' }
+const [eqCustom,  setEqCustom]  = useState({})   // { q1: 'typed text' }
   // Edit / regen / delete
   const [editOpen,    setEditOpen]   = useState(false)
   const [editTitle,   setEditTitle]  = useState('')
@@ -41,13 +44,35 @@ const [customCode, setCustomCode] = useState('')
   const [delOpen,     setDelOpen]    = useState(false)
   const [delLoading,  setDelLoading] = useState(false)
 const [currentStep, setCurrentStep] = useState('')
-
+const [shareOpen,  setShareOpen]  = useState(false)
+const [linkCopied, setLinkCopied] = useState(false)
+const [verOpen,    setVerOpen]    = useState(false)
+const [versions,   setVersions]   = useState([])
+const [verLoading, setVerLoading] = useState(false)
+const [previewVer, setPreviewVer] = useState(null)   // { version_no, prompt, html }
+const [verBusy,    setVerBusy]    = useState(false)
  // 'laptop' | 'mobile'
 const [device, setDevice] = useState('mobile')
 const [scrolledDown, setScrolledDown] = useState(false)
 const [codeOpen, setCodeOpen] = useState(false)
 const [codeCopied, setCodeCopied] = useState(false)
+  // existing line
 
+// Everything on the page works on what the iframe is showing
+const activeHtml      = previewVer ? previewVer.html : project?.generated_html
+const activeVersionNo = previewVer ? previewVer.version_no : null
+const activeUrl       = previewVer ? previewVer.github_url : project?.github_url
+const GENERIC_VER_PROMPTS = ['Initial version', 'Deployed snapshot']
+const activePrompt =
+  previewVer && previewVer.prompt && !GENERIC_VER_PROMPTS.includes(previewVer.prompt)
+    ? previewVer.prompt
+    : project?.prompt
+const [editPrompt,  setEditPrompt]  = useState('')
+const [editBusy,    setEditBusy]    = useState(false)
+const [pendingEdit, setPendingEdit] = useState('')
+const [creditsOpen, setCreditsOpen] = useState(false)
+const [buying,      setBuying]      = useState(false)
+const [deployingVer, setDeployingVer] = useState(null)   // version_no being deployed
 const copyGeneratedCode = async () => {
   try {
     await navigator.clipboard.writeText(project?.generated_html || '')
@@ -87,8 +112,22 @@ useEffect(() => {
   const ro = new ResizeObserver(update)
   ro.observe(el)
   return () => ro.disconnect()
-}, [device])
-
+}, [device, project?.status, !!project?.generated_html])
+useEffect(() => {
+  const onFocus = () => { if (!previewVer && project?.status === 'ready') fetchProject() }
+  window.addEventListener('focus', onFocus)
+  return () => window.removeEventListener('focus', onFocus)
+}, [fetchProject, previewVer, project?.status])
+// Opening a project (from the Projects page or a link) always starts on the latest version
+useEffect(() => {
+  setPreviewVer(null)
+  setVersions([])
+  setSuccess('')
+  setError('')
+  setCodeOpen(false)
+  setShareOpen(false)
+  window.scrollTo({ top: 0 })
+}, [id])
 useEffect(() => {
   let iv
   fetchProject().then(p => {
@@ -144,7 +183,39 @@ useEffect(() => {
     setProject(p => ({ ...p, generated_html: customCode }))
     setSuccess('✅ Preview updated with your custom code.')
   }
+  // Share the live GitHub Pages site if hosted, otherwise fall back to the page URL
+const shareUrl = activeUrl || window.location.href
+const shareText = `Check out "${project?.title || 'my website'}" — built with Zater Web Studio`
 
+const handleShare = async () => {
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: project?.title, text: shareText, url: shareUrl })
+      return
+    } catch (err) {
+      if (err.name === 'AbortError') return // user closed the sheet
+    }
+  }
+  setShareOpen(true) // desktop / unsupported browsers
+}
+
+const copyShareLink = async () => {
+  try {
+    await navigator.clipboard.writeText(activeHtml || '')
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 1800)
+  } catch {
+    setError('Could not copy link — please copy it manually.')
+  }
+}
+
+const SHARE_TARGETS = [
+  { name: 'WhatsApp', icon: '💬', href: `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}` },
+  { name: 'X',        icon: '𝕏',  href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}` },
+  { name: 'LinkedIn', icon: '💼', href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}` },
+  { name: 'Telegram', icon: '✈️', href: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}` },
+  { name: 'Email',    icon: '✉️', href: `mailto:?subject=${encodeURIComponent(project?.title || 'My website')}&body=${encodeURIComponent(shareText + '\n\n' + shareUrl)}` },
+]
   // Regenerate
   const startRegen = async () => {
     setRegenBusy(true)
@@ -162,10 +233,14 @@ useEffect(() => {
     } catch (err) { setError(err.message) }
     finally { setRegenBusy(false) }
   }
-  const submitAnswers = async () => {
+const finalAnswer = (q) => customAns[q.id]?.trim() || answers[q.id] || ''
+
+const submitAnswers = async () => {
   setAnswersLoading(true); setError('')
   try {
-    await api.post(`/projects/${id}/answers`, { answers })
+    const merged = {}
+    questions.forEach(q => { const a = finalAnswer(q); if (a) merged[q.id] = a })
+    await api.post(`/projects/${id}/answers`, { answers: merged })
     setProject(p => ({ ...p, status: 'generating' }))
     setPolling(true)
     setCurrentStep('Designing layout & writing content...')
@@ -228,54 +303,208 @@ const handlePay = async () => {
 
   // ── Download as ZIP ───────────────────────────────────────────
  // ── Download as single HTML file ──────────────────────────────
-const handleDownloadZip = async () => {
+const downloadHtml = (fallbackName) => {
+  if (!activeHtml) throw new Error('No generated content available to download yet.')
+  const base = project?.title?.replace(/[^a-z0-9]/gi, '_') || fallbackName
+  const name = activeVersionNo ? `${base}_v${activeVersionNo}` : base
+  const blob = new Blob([activeHtml], { type: 'text/html' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href = url
+  a.download = `${name}.html`
+  a.click(); URL.revokeObjectURL(url)
+}
+
+const handleDownloadZip = () => {
   setError('')
   try {
-    if (!project?.generated_html) {
-      throw new Error('No generated content available to download yet.')
-    }
-    const blob = new Blob([project.generated_html], { type: 'text/html' })
-    const url  = URL.createObjectURL(blob)
-    const a    = document.createElement('a')
-    a.href = url
-    a.download = `${project?.title?.replace(/[^a-z0-9]/gi, '_') || 'website'}.html`
-    a.click(); URL.revokeObjectURL(url)
+    downloadHtml('website')
     setChoiceOpen(false)
-    setSuccess('✅ HTML file downloaded! Check your downloads folder.')
+    setSuccess(`✅ ${activeVersionNo ? `v${activeVersionNo}` : 'HTML file'} downloaded! Check your downloads folder.`)
   } catch (err) { setError(err.message) }
 }
 
-  // ── Free download (for template projects) ────────────────────
-  const handleFreeDownload = () => {
-    if (!project?.generated_html) return
-    const blob = new Blob([project.generated_html], { type: 'text/html' })
-    const url  = URL.createObjectURL(blob)
-    const a    = document.createElement('a')
-    a.href = url
-    a.download = `${project?.title?.replace(/[^a-z0-9]/gi, '_') || 'template'}.html`
-    a.click(); URL.revokeObjectURL(url)
+const handleFreeDownload = () => {
+  setError('')
+  try {
+    downloadHtml('template')
     setSuccess('✅ Downloaded! Open the HTML file in your browser.')
-  }
-
+  } catch (err) { setError(err.message) }
+}
   // ── Deploy to GitHub Pages ────────────────────────────────────
-  const handleGithubDeploy = async () => {
-    setGhDeploying(true); setError('')
-    try {
-      const r = await api.post('/hosting/github-pages', { projectId: id })
-      setChoiceOpen(false)
-      setProject(p => ({ ...p, github_url: r.url }))
-      setSuccess(`✅ Live at ${r.url} — may take 1–2 min to go live`)
-    } catch (err) {
-      setChoiceOpen(false)
-      if (err.message?.includes('token') || err.message?.includes('NO_GITHUB_TOKEN') || err.message?.includes('Settings')) {
-        setError('⚠️ GitHub not connected. Redirecting to Settings...')
-        setTimeout(() => navigate('/settings'), 1800)
-      } else {
-        setError(err.message)
-      }
-    } finally { setGhDeploying(false) }
-  }
+ const handleGithubDeploy = async () => {
+  setGhDeploying(true); setError('')
+  try {
+    const r = await api.post('/hosting/github-pages', {
+      projectId: id,
+      ...(activeVersionNo ? { versionNo: activeVersionNo } : {}),
+    })
+    const rootUrl    = r.rootUrl || r.url
+    const versionUrl = r.versionUrl || r.url
+    setChoiceOpen(false)
 
+    if (previewVer) setPreviewVer(v => ({ ...v, github_url: versionUrl }))
+    if (r.isCurrent !== false) setProject(p => ({ ...p, github_url: rootUrl }))
+
+    const shown = previewVer ? versionUrl : rootUrl
+    setSuccess(`✅ ${previewVer ? `v${activeVersionNo} ` : ''}Live at ${shown} — may take 1–2 min to go live`)
+  } catch (err) {
+    setChoiceOpen(false)
+    if (/token|NO_GITHUB_TOKEN|Settings/i.test(err.message || '')) {
+      setError('⚠️ GitHub not connected. Redirecting to Settings...')
+      setTimeout(() => navigate('/settings'), 1800)
+    } else setError(err.message)
+  } finally { setGhDeploying(false) }
+}
+
+const isNoCredits = (err) =>
+  err?.status === 402 || err?.code === 'INSUFFICIENT_CREDITS' || /credits/i.test(err?.message || '')
+
+const refreshCredits = () =>
+  api.get('/credits')
+    .then(d => setUser?.(u => ({ ...u, credits: d.credits, has_paid: d.has_paid })))
+    .catch(() => {})
+
+// Works for a fresh edit and for reloading the page mid-edit
+useEffect(() => {
+  if (project?.status !== 'editing') return
+  const iv = setInterval(async () => {
+    try {
+      const s = await api.get(`/projects/${id}/status`)
+      if (s.current_step) setCurrentStep(s.current_step)
+      if (s.status !== 'editing') {
+        clearInterval(iv)
+        if (s.edit_error) setError(s.edit_error)
+        else setSuccess('✅ Changes applied!')
+        await fetchProject()
+        refreshCredits()
+      }
+    } catch {}
+  }, 2500)
+  return () => clearInterval(iv)
+}, [project?.status, id, fetchProject])
+
+const runEdit = async (msg, answersArr = []) => {
+  setEditBusy(true); setError(''); setSuccess('')
+  try {
+    await api.post(`/projects/${id}/edit`, { prompt: msg, answers: answersArr })
+    setEditPrompt(''); setPendingEdit('')
+    setCurrentStep('Applying your changes...')
+    setProject(p => ({ ...p, status: 'editing' }))
+  } catch (err) {
+    if (isNoCredits(err)) { setPendingEdit(msg); setCreditsOpen(true) }
+    else setError(err.message)
+  } finally { setEditBusy(false) }
+}
+
+const submitEdit = async (text = editPrompt) => {
+  const msg = text.trim()
+  if (!msg || editBusy || project?.status === 'editing') return
+  setEditBusy(true); setError(''); setSuccess('')
+  let qs = []
+  try {
+    const d = await api.post(`/projects/${id}/edit/questions`, { prompt: msg })
+    qs = d.questions || []
+  } catch (err) {
+    if (isNoCredits(err)) { setPendingEdit(msg); setCreditsOpen(true); setEditBusy(false); return }
+    // any other error: skip questions and run the edit directly
+  }
+  if (qs.length) {
+    setPendingEdit(msg); setEqList(qs); setEqAnswers({}); setEqCustom({}); setEqOpen(true)
+    setEditBusy(false)
+    return
+  }
+  await runEdit(msg)
+}
+
+const confirmEditAnswers = () => {
+  const arr = eqList
+    .map(q => ({ question: q.question, answer: eqCustom[q.id]?.trim() || eqAnswers[q.id] || '' }))
+    .filter(a => a.answer)
+  setEqOpen(false)
+  runEdit(pendingEdit, arr)
+}
+
+const skipEditQuestions = () => { setEqOpen(false); runEdit(pendingEdit) }
+
+const handleBuyCredits = async () => {
+  setBuying(true); setError('')
+  try {
+    const order = await api.post('/credits/purchase/order', { plan: 'pack100' })
+    const rzp = new window.Razorpay({
+      key: order.razorpayKeyId,
+      order_id: order.razorpayOrderId,
+      amount: order.amount,
+      currency: 'INR',
+      name: 'Zater Web Studio',
+      description: '100 credits',
+      handler: async (resp) => {
+        try {
+          const v = await api.post('/credits/verify', {
+            razorpay_order_id: resp.razorpay_order_id,
+            razorpay_payment_id: resp.razorpay_payment_id,
+            razorpay_signature: resp.razorpay_signature,
+          })
+          if (v.status === 'paid' || v.status === 'already_processed') {
+            setCreditsOpen(false)
+            await refreshCredits()
+            if (pendingEdit) submitEdit(pendingEdit)   // auto-retry the saved edit
+            else setSuccess('✅ 100 credits added!')
+          } else setError(v.message || 'Payment verification failed.')
+        } catch (err) { setError(err.message) }
+        finally { setBuying(false) }
+      },
+      modal: { ondismiss: () => setBuying(false) },
+      theme: { color: '#c0392b' },
+    })
+    rzp.open()
+  } catch (err) { setError(err.message); setBuying(false) }
+}
+const openVersions = async () => {
+  setVerOpen(true); setVerLoading(true)
+  try {
+    const d = await api.get(`/projects/${id}/versions`)
+    setVersions(d.versions || [])
+  } catch (err) { setError(err.message) }
+  finally { setVerLoading(false) }
+}
+
+const previewVersion = async (no) => {
+  setVerBusy(true)
+  try {
+    const d = await api.get(`/projects/${id}/versions/${no}`)
+    setPreviewVer(d.version)
+    setVerOpen(false)
+  } catch (err) { setError(err.message) }
+  finally { setVerBusy(false) }
+}
+
+const restorePreviewed = async () => {
+  if (!previewVer) return
+  setVerBusy(true)
+  try {
+    await api.post(`/projects/${id}/restore/${previewVer.version_no}`)
+    setPreviewVer(null)
+    await fetchProject()
+    setSuccess(`✅ Restored version ${previewVer.version_no}.`)
+  } catch (err) { setError(err.message) }
+  finally { setVerBusy(false) }
+}
+const deployVersion = async (no) => {
+  setDeployingVer(no); setError(''); setSuccess('')
+  try {
+    const r = await api.post('/hosting/github-pages', { projectId: id, versionNo: no })
+    setVersions(vs => vs.map(v => v.version_no === no ? { ...v, github_url: r.versionUrl } : v))
+    if (previewVer?.version_no === no) setPreviewVer(v => ({ ...v, github_url: r.versionUrl }))
+    if (r.isCurrent) setProject(p => ({ ...p, github_url: r.rootUrl }))
+    setSuccess(`✅ v${no} is live at ${r.versionUrl} — may take 1–2 min to go live`)
+  } catch (err) {
+    if (/token|NO_GITHUB_TOKEN|Settings/i.test(err.message || '')) {
+      setError('⚠️ GitHub not connected. Redirecting to Settings...')
+      setTimeout(() => navigate('/settings'), 1800)
+    } else setError(err.message)
+  } finally { setDeployingVer(null) }
+}
   if (loading) return <Loader />
  // AFTER
 if (error && !project) return (
@@ -302,8 +531,9 @@ if (error && !project) return (
 const CUSTOM_DOMAIN_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdLlXuG7dVFdC94vzFnw8YOe_DK6iytqChqiOIm1dGeVz522g/viewform?usp=publish-editor'
   const isGenerating = project?.status === 'generating'
   const isReady      = project?.status === 'ready'
+  const isEditing = project?.status === 'editing'
   const isFailed     = project?.status === 'failed'
-const isGithub     = !!project?.github_url
+const isGithub = !!activeUrl     // was !!project?.github_url
 const isTemplate   = !!project?.template_id || project?.is_template === 1 || !project?.prompt || project?.prompt?.length === 0
 const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
   // Download & hosting are FREE for everyone — templates AND AI-generated sites
@@ -324,12 +554,19 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
         {isFullscreen ? '⊡ Exit Full' : '⛶ Full Screen'}
       </button>
     )}
+    {isReady && (
+      <button className="pp-nb pp-nb-outline" onClick={openVersions}>🕘 History</button>
+    )}
+    {isReady && (
+      <button className="pp-nb pp-nb-outline" onClick={handleShare}>🔗 Share</button>
+    )}
     <button className="pp-nb pp-nb-outline" onClick={() => { setEditTitle(project?.title || ''); setEditOpen(true) }}>✏️</button>
-
     <button className="pp-nb pp-nb-danger" onClick={() => setDelOpen(true)}>🗑️</button>
+
+    {/* Live link follows whichever version is being previewed */}
     {isReady && isGithub && (
-      <a className="pp-nb pp-nb-green" href={project.github_url} target="_blank" rel="noopener noreferrer">
-        🌐 View Live ↗
+      <a className="pp-nb pp-nb-green" href={activeUrl} target="_blank" rel="noopener noreferrer">
+        🌐 {previewVer ? `View v${activeVersionNo} Live ↗` : 'View Live ↗'}
       </a>
     )}
     {isReady && isGithub && (
@@ -338,27 +575,38 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
       </a>
     )}
 
-    {/* Template: always free — no unlock needed */}
-    {isReady && isTemplate && (
-      <>
-        <button className="pp-nb pp-nb-outline" onClick={handleFreeDownload}>⬇️ Download</button>
-        {!isGithub && (
-          <button className="pp-nb pp-nb-green" onClick={() => setChoiceOpen(true)}>🐙 Deploy Free</button>
-        )}
-      </>
+    {/* Template: always free. Download and Deploy always visible */}
+   {/* Template: Download always, Deploy only if this version has no URL */}
+{isReady && isTemplate && (
+  <>
+    <button className="pp-nb pp-nb-outline" onClick={handleFreeDownload}>
+      ⬇️ Download{previewVer ? ` v${activeVersionNo}` : ''}
+    </button>
+    {!isGithub && (
+      <button className="pp-nb pp-nb-green" onClick={() => setChoiceOpen(true)}>
+        🐙 Deploy Free{previewVer ? ` v${activeVersionNo}` : ''}
+      </button>
     )}
+  </>
+)}
 
-    {/* AI-generated: gated behind the ONE-TIME global ₹99 unlock (user.has_paid) */}
-    {isReady && !isTemplate && !isGithub && (
-      user?.has_paid ? (
-        <>
-          <button className="pp-nb pp-nb-outline" onClick={handleDownloadZip}>⬇️ Download</button>
-          <button className="pp-nb pp-nb-green" onClick={() => setChoiceOpen(true)}>🐙 Host</button>
-        </>
-      ) : (
-        <button className="pp-nb pp-nb-red" onClick={handlePay} disabled={paying}>🔓 Unlock ₹49</button>
-      )
-    )}
+{/* AI-generated: gated behind the one-time unlock */}
+{isReady && !isTemplate && (
+  user?.has_paid ? (
+    <>
+      <button className="pp-nb pp-nb-outline" onClick={handleDownloadZip}>
+        ⬇️ Download{previewVer ? ` v${activeVersionNo}` : ''}
+      </button>
+      {!isGithub && (
+        <button className="pp-nb pp-nb-green" onClick={() => setChoiceOpen(true)}>
+          🐙 Host{previewVer ? ` v${activeVersionNo}` : ''}
+        </button>
+      )}
+    </>
+  ) : (
+    <button className="pp-nb pp-nb-red" onClick={handlePay} disabled={paying}>🔓 Unlock ₹49</button>
+  )
+)}
   </div>
 </nav>
 
@@ -366,19 +614,33 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
 
           {/* SIDEBAR */}
           <aside className="pp-sidebar">
-            <div>
-              <div className="pp-lbl">Project</div>
-              <h2 className="pp-title">{project?.title}</h2>
-              <button className="pp-edit-link" onClick={() => { setEditTitle(project?.title || ''); setEditOpen(true) }}>Edit title</button>
-            </div>
+           <div>
+  <div className="pp-lbl">Project</div>
+  <h2 className="pp-title">
+    {project?.title}
+    {previewVer && (
+      <span style={{
+        marginLeft:8, padding:'2px 9px', borderRadius:100, verticalAlign:'middle',
+        background:'rgba(91,79,255,0.1)', color:'#5b4fff', fontSize:11, fontWeight:800,
+        fontFamily:'Nunito,sans-serif',
+      }}>v{activeVersionNo}</span>
+    )}
+  </h2>
+  {!previewVer && (
+    <button className="pp-edit-link" onClick={() => { setEditTitle(project?.title || ''); setEditOpen(true) }}>Edit title</button>
+  )}
+</div>
+
+
 
             {!isTemplate && (
-              <div>
-                <div className="pp-lbl">Prompt</div>
-                <div className="pp-prompt">"{project?.prompt}"</div>
-                
-              </div>
-            )}
+  <div className="pp-prompt-wrap">
+    <div className="pp-lbl">
+      {previewVer && activePrompt !== project?.prompt ? `Change request · v${activeVersionNo}` : 'Prompt'}
+    </div>
+    <div className="pp-prompt">"{activePrompt}"</div>
+  </div>
+)}
 
             {isTemplate && (
               <div className="pp-template-badge">
@@ -461,15 +723,15 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
                       <div className="pp-card pp-card-hosted">
                         <div className="pp-hosted-live">🟢 Site is Live on GitHub!</div>
                         <div style={{marginTop:8,marginBottom:4}}>
-                          <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="pp-domain-link">
-                            {project.github_url} ↗
-                          </a>
+                          <a href={activeUrl} target="_blank" rel="noopener noreferrer" className="pp-domain-link">
+  {activeUrl} ↗
+</a>
                         </div>
                         <div className="pp-card-sub">Free GitHub Pages hosting</div>
-                        <a href={CUSTOM_DOMAIN_FORM_URL} target="_blank" rel="noopener noreferrer" className="pp-dl-btn" style={{marginTop:8, background:'#5b4fff', textDecoration:'none', display:'block', textAlign:'center', boxShadow:'0 2px 10px rgba(91,79,255,0.3)'}}>
+                        
+<a href={CUSTOM_DOMAIN_FORM_URL} target="_blank" rel="noopener noreferrer" className="pp-dl-btn" style={{marginTop:8, background:'#5b4fff', textDecoration:'none', display:'block', textAlign:'center', boxShadow:'0 2px 10px rgba(91,79,255,0.3)'}}>
   🔗 Get Custom Domain
 </a>
-
 <button
   className="pp-dl-btn"
   style={{marginTop:8, background:'#f59e0b', boxShadow:'0 2px 10px rgba(245,158,11,0.3)'}}
@@ -507,9 +769,8 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
       <p className="pp-state-sub">{currentStep || 'Figuring out the best questions to ask...'}</p>
     </div>
   )}
-
-  {isAwaitingAnswers && (
-  <div className="pp-center-state" style={{maxWidth:460, margin:'0 auto', textAlign:'left'}}>
+{isAwaitingAnswers && (
+  <div className="pp-center-state" style={{maxWidth:460, margin:'0 auto', textAlign:'left', overflowY:'auto', justifyContent:'flex-start'}}>
     <h3 className="pp-state-title" style={{marginBottom:4}}>Quick questions first</h3>
     <p className="pp-state-sub" style={{marginBottom:14}}>
       A few details help Claude design a better site for you.
@@ -520,40 +781,65 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
       <>
         {questions.map(q => (
           <div key={q.id} style={{width:'100%', marginBottom:16}}>
-            <label className="pp-lbl" style={{marginBottom:8, display:'block'}}>{q.question}</label>
-            <div style={{display:'flex', flexWrap:'wrap', gap:8}}>
-              {(q.options || []).map(opt => {
-                const selected = answers[q.id] === opt
-                return (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => setAnswers(a => ({ ...a, [q.id]: opt }))}
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: 9,
-                      border: selected ? '1.5px solid #5b4fff' : '1.5px solid #e2e2ea',
-                      background: selected ? 'rgba(91,79,255,0.08)' : '#fff',
-                      color: selected ? '#5b4fff' : '#3a3a4a',
-                      fontSize: 12.5,
-                      fontWeight: 700,
-                      fontFamily: 'Nunito, sans-serif',
-                      cursor: 'pointer',
-                      transition: 'all .15s',
-                    }}
-                  >
-                    {opt}
-                  </button>
-                )
-              })}
-            </div>
+            <label className="pp-lbl" style={{marginBottom:8, display:'block'}}>
+              {q.question}{q.optional ? '' : ' *'}
+            </label>
+
+            {/* Choice buttons */}
+            {q.type !== 'text' && (
+              <div style={{display:'flex', flexWrap:'wrap', gap:8, marginBottom:8}}>
+                {(q.options || []).map(opt => {
+                  const selected = answers[q.id] === opt && !customAns[q.id]?.trim()
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        setAnswers(a => ({ ...a, [q.id]: opt }))
+                        setCustomAns(c => ({ ...c, [q.id]: '' }))
+                      }}
+                      style={{
+                        padding:'8px 14px', borderRadius:9, cursor:'pointer',
+                        border: selected ? '1.5px solid #5b4fff' : '1.5px solid #e2e2ea',
+                        background: selected ? 'rgba(91,79,255,0.08)' : '#fff',
+                        color: selected ? '#5b4fff' : '#3a3a4a',
+                        fontSize:12.5, fontWeight:700, fontFamily:'Nunito, sans-serif',
+                        transition:'all .15s',
+                      }}
+                    >{opt}</button>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Write-your-own box (all choice questions) or optional text box */}
+            {q.type === 'text' ? (
+              <textarea
+                className="pp-textarea"
+                placeholder={q.placeholder || 'Write here (optional)...'}
+                maxLength={500}
+                value={customAns[q.id] || ''}
+                onChange={e => setCustomAns(c => ({ ...c, [q.id]: e.target.value }))}
+              />
+            ) : (
+              <input
+                className="pp-input"
+                placeholder={q.id === 'bg_color' ? 'Or type your own color, e.g. light green' : 'Or write your own answer...'}
+                maxLength={300}
+                value={customAns[q.id] || ''}
+                onChange={e => {
+                  setCustomAns(c => ({ ...c, [q.id]: e.target.value }))
+                  if (e.target.value) setAnswers(a => ({ ...a, [q.id]: '' }))
+                }}
+              />
+            )}
           </div>
         ))}
         <button
           className="pp-pay-btn"
           style={{background:'#5b4fff'}}
           onClick={submitAnswers}
-          disabled={answersLoading || questions.some(q => !answers[q.id])}
+          disabled={answersLoading || questions.some(q => !q.optional && !finalAnswer(q))}
         >
           {answersLoading ? '🔄 Starting generation...' : '🚀 Generate My Website'}
         </button>
@@ -564,7 +850,7 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
 
   {isGenerating && <GeneratingState step={currentStep} />}
 
-  {isReady && project?.generated_html && (
+  {(isReady || isEditing) && project?.generated_html && (
     <div className="pp-iframe-container">
       <div className="pp-browser-bar">
         <div className="pp-browser-dots">
@@ -573,8 +859,8 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
           <span style={{background:'#22c55e'}} />
         </div>
         <div className="pp-browser-url">
-          {isGithub ? project.github_url : 'preview.zater.in — ' + (project?.title || '')}
-        </div>
+  {isGithub ? activeUrl : 'preview.zater.in — ' + (project?.title || '')}
+</div>
         <div style={{display:'flex',gap:6}}>
           <button
             className={`pp-device-btn ${device === 'laptop' ? 'pp-device-active' : ''}`}
@@ -597,7 +883,9 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
           <button className="pp-browser-btn" onClick={() => setFullscreen(f => !f)}>{isFullscreen ? '⊡' : '⛶'}</button>
         </div>
       </div>
+      
       <div className={`pp-iframe-wrap pp-device-${device}`} ref={wrapRef}>
+      <div style={{ width: DEVICE_SIZES[device].width * scale, height: DEVICE_SIZES[device].height * scale, flexShrink: 0 }}>
         <div
           className="pp-iframe-scaler"
           style={{
@@ -609,11 +897,18 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
           <iframe
             ref={iframeRef}
             className="pp-iframe"
-            srcDoc={project.generated_html}
+            srcDoc={previewVer ? previewVer.html : project.generated_html}
             title={project.title}
             style={{ width: DEVICE_SIZES[device].width, height: DEVICE_SIZES[device].height }}
             sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-same-origin allow-downloads"
           />
+          {isEditing && (
+  <div className="pp-edit-overlay">
+    <div className="pp-gen-ring" style={{width:44,height:44}} />
+    <div style={{fontWeight:800,fontSize:13}}>{currentStep || 'Applying your changes...'}</div>
+  </div>
+)}
+        </div>
         </div>
       </div>
 {isReady && (
@@ -643,17 +938,29 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
           </div>
         </div>
       )}
+     
     </div>
   )}
 
-  {isFailed && (
-    <div className="pp-center-state">
-      <div style={{fontSize:48}}>⚠️</div>
-      <h3 className="pp-state-title">Generation Failed</h3>
-      <p className="pp-state-sub">Try regenerating with a different prompt.</p>
-      <button style={S.outBtn} onClick={() => { setRegenPrm(project?.prompt || ''); setRegenOpen(true) }}>🔄 Try Again</button>
-    </div>
-  )}
+ {isFailed && (
+  <div className="pp-center-state">
+    <div style={{fontSize:48}}>⚠️</div>
+    <h3 className="pp-state-title">Generation Failed</h3>
+    <p className="pp-state-sub">{project?.edit_error || 'Try regenerating with a different prompt.'}</p>
+
+    {project?.error_detail && (
+      <pre style={{
+        maxWidth: 520, width: '100%', maxHeight: 180, overflow: 'auto',
+        background: '#14141c', color: '#fca5a5', border: '1px solid #2a2a36',
+        borderRadius: 8, padding: 12, fontSize: 11.5, lineHeight: 1.6,
+        textAlign: 'left', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+        fontFamily: 'JetBrains Mono, monospace',
+      }}>
+        {project.error_detail}
+      </pre>
+    )}
+  </div>
+)}
 </main>
         </div>
 
@@ -743,9 +1050,41 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
           </div>
         )}
 
-        {/* Regen Modal */}
-        
+    {shareOpen && (
+  <div className="pp-overlay" onClick={() => setShareOpen(false)}>
+    <div className="pp-modal" onClick={e => e.stopPropagation()}>
+      <div className="pp-modal-hdr">
+        <span className="pp-modal-title">🔗 Share this project</span>
+        <button className="pp-modal-x" onClick={() => setShareOpen(false)}>✕</button>
+      </div>
+      <div className="pp-modal-body">
+        <div className="pp-share-row">
+          <input className="pp-input" value={shareUrl} readOnly onFocus={e => e.target.select()} />
+          <button className="pp-modal-btn pp-modal-save" onClick={copyShareLink}>
+            {linkCopied ? '✅ Copied' : 'Copy'}
+          </button>
+        </div>
 
+        <div className="pp-share-grid">
+          {SHARE_TARGETS.map(t => (
+            <a key={t.name} className="pp-share-item" href={t.href}
+               target="_blank" rel="noopener noreferrer">
+              <span className="pp-share-icon">{t.icon}</span>
+              <span>{t.name}</span>
+            </a>
+          ))}
+        </div>
+
+        {!project?.github_url && (
+          <div className="pp-warn-box">
+            ⚠️ This project isn't hosted yet, so the link above only works for you.
+            Deploy to GitHub Pages first to get a public link anyone can open.
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
         {/* Delete Modal */}
         {delOpen && (
           <div className="pp-overlay" onClick={() => setDelOpen(false)}>
@@ -761,6 +1100,100 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
             </div>
           </div>
         )}
+
+        {verOpen && (
+  <div className="pp-overlay" onClick={() => setVerOpen(false)}>
+    <div className="pp-modal" onClick={e => e.stopPropagation()}>
+      <div className="pp-modal-hdr">
+        <span className="pp-modal-title">🕘 Version History</span>
+        <button className="pp-modal-x" onClick={() => setVerOpen(false)}>✕</button>
+      </div>
+      <div className="pp-modal-body" style={{maxHeight:'60vh',overflowY:'auto'}}>
+        {verLoading ? <div className="pp-gen-ring" style={{width:36,height:36,margin:'0 auto'}} />
+        : versions.length === 0 ? <p className="pp-choice-intro">No earlier versions yet. A version is saved the first time you edit.</p>
+        : versions.map((v, i) => (
+  <div key={v.version_no} className="pp-ver-item">
+    <div style={{minWidth:0, flex:1}}>
+      <div style={{fontWeight:800,fontSize:13}}>
+        v{v.version_no}{i === 0 ? ' · Latest' : ''}
+      </div>
+      <div className="pp-ver-prompt">{v.prompt}</div>
+      <div style={{fontSize:11,color:'#a0a0b0'}}>
+        {new Date(v.created_at).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}
+      </div>
+      {v.github_url && (
+        <a href={v.github_url} target="_blank" rel="noopener noreferrer" className="pp-domain-link"
+           style={{display:'block', marginTop:4}}>
+          🟢 {v.github_url} ↗
+        </a>
+      )}
+    </div>
+    <div style={{display:'flex', flexDirection:'column', gap:6}}>
+      <button className="pp-modal-btn pp-modal-save" disabled={verBusy}
+              onClick={() => previewVersion(v.version_no)}>
+        Preview
+      </button>
+    
+    </div>
+  </div>
+))}
+      </div>
+    </div>
+  </div>
+)}
+        {eqOpen && (
+  <div className="pp-overlay" onClick={() => setEqOpen(false)}>
+    <div className="pp-modal pp-modal-lg" onClick={e => e.stopPropagation()}>
+      <div className="pp-modal-hdr">
+        <span className="pp-modal-title">✨ A few quick questions</span>
+        <button className="pp-modal-x" onClick={() => setEqOpen(false)}>✕</button>
+      </div>
+      <div className="pp-modal-body" style={{maxHeight:'60vh',overflowY:'auto'}}>
+        {eqList.map(q => (
+          <div key={q.id}>
+            <label className="pp-lbl" style={{marginBottom:8,display:'block'}}>{q.question}</label>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:8}}>
+              {(q.options || []).map(opt => {
+                const selected = eqAnswers[q.id] === opt && !eqCustom[q.id]
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => {
+                      setEqAnswers(a => ({ ...a, [q.id]: opt }))
+                      setEqCustom(c => ({ ...c, [q.id]: '' }))
+                    }}
+                    style={{
+                      padding:'8px 14px', borderRadius:9, cursor:'pointer',
+                      border: selected ? '1.5px solid #5b4fff' : '1.5px solid #e2e2ea',
+                      background: selected ? 'rgba(91,79,255,0.08)' : '#fff',
+                      color: selected ? '#5b4fff' : '#3a3a4a',
+                      fontSize:12.5, fontWeight:700, fontFamily:'Nunito, sans-serif',
+                    }}
+                  >{opt}</button>
+                )
+              })}
+            </div>
+            <input
+              className="pp-input"
+              placeholder="Or write your own answer..."
+              maxLength={300}
+              value={eqCustom[q.id] || ''}
+              onChange={e => {
+                setEqCustom(c => ({ ...c, [q.id]: e.target.value }))
+                if (e.target.value) setEqAnswers(a => ({ ...a, [q.id]: '' }))
+              }}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="pp-modal-ftr">
+        <button className="pp-modal-btn pp-modal-cancel" onClick={skipEditQuestions}>Skip</button>
+        <button className="pp-modal-btn pp-modal-save" onClick={confirmEditAnswers}>✨ Apply Edit (100 credits)</button>
+      </div>
+    </div>
+  </div>
+)}
 {codeOpen && (
   <div className="pp-overlay" onClick={() => setCodeOpen(false)}>
     <div className="pp-modal pp-modal-lg" onClick={e => e.stopPropagation()}>
@@ -770,12 +1203,38 @@ const canViewCode  = isTemplate || user?.has_paid   // ← add this line here
       </div>
       <div className="pp-modal-body">
         <pre className="pp-code-view">
-          <code>{project?.generated_html}</code>
-        </pre>
+  <code>{activeHtml}</code>
+</pre>
         <button className="pp-customize-apply" onClick={copyGeneratedCode}>
           {codeCopied ? '✅ Copied!' : '📋 Copy Code'}
         </button>
       </div>
+    </div>
+  </div>
+)}
+{(isReady || isEditing) && (
+  <div className="pp-editbar">
+    <div className="pp-editbar-meta">
+      <span>⚡ {user?.credits ?? '—'} credits</span>
+      <span>Each edit = 100 credits</span>
+    </div>
+    <div className="pp-editbar-row">
+      <input
+        className="pp-editbar-input"
+        value={editPrompt}
+        onChange={e => setEditPrompt(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && submitEdit()}
+        disabled={isEditing || editBusy || !!previewVer}
+        maxLength={2000}
+        placeholder={isEditing ? 'Applying your changes...' : previewVer ? 'Exit version preview to edit' : 'Describe a change, e.g. "make the hero dark blue"'}
+      />
+      <button
+        className="pp-editbar-send"
+        onClick={() => submitEdit()}
+        disabled={isEditing || editBusy || !!previewVer || !editPrompt.trim()}
+      >
+        {isEditing || editBusy ? '⏳' : '✨ Edit'}
+      </button>
     </div>
   </div>
 )}
@@ -798,6 +1257,7 @@ const StatusBadge = ({ status, polling }) => {
     generating: { label: '⏳ Generating...', color: '#d97706', bg: 'rgba(245,158,11,0.1)' },
     ready:      { label: '✅ Ready',          color: '#16a34a', bg: 'rgba(34,197,94,0.1)'  },
     failed:     { label: '❌ Failed',         color: '#dc2626', bg: 'rgba(239,68,68,0.1)'  },
+    editing: { label: '✏️ Editing...', color: '#5b4fff', bg: 'rgba(91,79,255,0.1)' },
   }
   const s = M[status] || M.ready
   return <div style={{padding:'5px 13px',borderRadius:100,background:s.bg,fontSize:12,fontWeight:700,color:s.color}}>{s.label}</div>
@@ -911,13 +1371,11 @@ const CSS = `
 .pp-device-active:hover{color:#fff;}
 
 .pp-iframe-wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;overflow:auto;background:#e2e2ea;padding:20px;isolation:isolate;}
-.pp-iframe-scaler{transform-origin:top center;flex-shrink:0;transition:transform .15s ease;position:relative;z-index:1;}
+.pp-iframe-scaler{transform-origin:top left;flex-shrink:0;transition:transform .15s ease;position:relative;z-index:1;}
 .pp-iframe{display:block;width:100%;height:100%;border:none;background:#fff;position:relative;}
 .pp-device-laptop .pp-iframe{border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.12);}
 .pp-device-mobile .pp-iframe{border-radius:26px;border:8px solid #0a0a12;box-shadow:0 10px 40px rgba(0,0,0,0.25);}
-@media(max-width:700px){
-  .pp-device-mobile .pp-iframe{width:100%;max-width:375px;height:70vh;}
-}
+
 
 .pp-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .15s ease;}
 .pp-modal{background:#fff;border-radius:18px;width:100%;max-width:440px;box-shadow:0 24px 80px rgba(0,0,0,0.2);animation:fadeUp .2s ease;overflow:hidden;}
@@ -976,6 +1434,61 @@ const CSS = `
 .pp-customize-actions{display:flex;justify-content:flex-end;}
 .pp-customize-apply{padding:8px 16px;border-radius:8px;background:#22c55e;border:none;color:#fff;font-size:12.5px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:opacity .15s;}
 .pp-customize-apply:hover{opacity:.88;}
+.pp-iframe-container{position:relative;}
+/* Fixed, transparent edit bar: visible without scrolling */
+.pp-editbar{
+  position:fixed; bottom:0; left:300px; right:0; z-index:400;
+  padding:28px 18px calc(14px + env(safe-area-inset-bottom));
+ background:linear-gradient(to top, rgba(255,255,255,0.92) 40%, rgba(255,255,255,0));
+  pointer-events:none;               /* gradient area doesn't block the preview */
+}
+.pp-editbar > *{ pointer-events:auto; }
+.pp-editbar-meta{display:flex;justify-content:space-between;max-width:760px;margin:0 auto 6px;padding:0 6px;font-size:11px;font-weight:700;color:#5a5a70;}
+.pp-editbar-row{display:flex;gap:8px;max-width:760px;margin:0 auto;align-items:center;}
+.pp-editbar-input{
+  flex:1; padding:13px 18px; border-radius:100px;
+ border:1.5px solid rgba(91,79,255,0.25);
+ background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+ box-shadow:0 4px 20px rgba(0,0,0,0.08);
+  font-size:14px; font-family:'Nunito',sans-serif; color:#0a0a12; outline:none;
+}
+  .pp-ver-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 14px;background:rgba(91,79,255,0.08);border-bottom:1px solid rgba(91,79,255,0.25);font-size:12.5px;color:#3a3a4a;}
+.pp-ver-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1.5px solid #e2e2ea;border-radius:10px;}
+.pp-ver-prompt{font-size:12px;color:#5a5a70;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px;}
+.pp-editbar-input:focus{border-color:#5b4fff;background:#fff;}
+.pp-editbar-input::placeholder{color:rgba(10,10,18,0.55);}
+.pp-editbar-send{
+  padding:13px 22px; border-radius:100px; border:none; background:#5b4fff; color:#fff;
+  font-weight:800; font-size:13px; cursor:pointer; font-family:'Nunito',sans-serif;
+  white-space:nowrap; box-shadow:0 4px 16px rgba(91,79,255,0.35);
+}
+.pp-editbar-send:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
+
+/* keep the preview from being hidden behind the bar */
+.pp-iframe-container{padding-bottom:96px;}
+.pp-fullscreen .pp-editbar{left:0;}
+
+/* the old scroll helpers are no longer needed */
+.pp-scroll-fab{display:none !important;}
+
+
+.pp-share-row{display:flex;gap:8px;align-items:center;}
+.pp-share-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.pp-share-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border:1.5px solid #e2e2ea;border-radius:12px;text-decoration:none;color:#0a0a12;font-size:11px;font-weight:700;transition:all .15s;}
+.pp-share-item:hover{border-color:#5b4fff;background:rgba(91,79,255,0.06);transform:translateY(-2px);}
+.pp-share-icon{font-size:22px;line-height:1;}
+@media(max-width:700px){
+  .pp-share-grid{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:700px){
+  .pp-editbar{left:0;padding:24px 10px calc(10px + env(safe-area-inset-bottom));}
+  .pp-editbar-input{padding:12px 14px;font-size:13px;}
+  .pp-editbar-send{padding:12px 16px;}
+  .pp-root{padding-bottom:100px;}
+}
+.pp-edit-overlay{position:absolute;inset:0;z-index:5;background:rgba(255,255,255,0.78);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-radius:8px;}
+
 .pp-scroll-fab{
   display:none;
   position:fixed;
@@ -988,12 +1501,13 @@ const CSS = `
   width:64px;
   height:64px;
   border-radius:18px;
-  background:#0a0a12;
+  background:rgba(10,10,18,0.35);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
   color:#fff;
   border:none;
   cursor:pointer;
   z-index:500;
-  box-shadow:0 4px 16px rgba(0,0,0,0.25);
+  box-shadow:0 4px 16px rgba(0,0,0,0.12);
   animation:fabPulse 2.2s ease-in-out infinite;
 }
 .pp-scroll-fab-arrow{font-size:18px;font-weight:800;line-height:1;}
@@ -1035,7 +1549,14 @@ const CSS = `
   white-space:nowrap;
 }
 @media(max-width:700px){
-  .pp-download-hint{ display:flex; }
+  .pp-download-hint{
+    display:flex !important;
+    position:fixed;
+    bottom:104px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:450;
+  }
 }
 .pp-code-view{
   max-height:55vh;
@@ -1063,15 +1584,20 @@ const CSS = `
   }
   .pp-preview{
     order:1;
-    min-height:60vh;
+     min-height:0;
+    height:auto;
   }
   .pp-sidebar{
     order:2;
     overflow-y:visible;
   }
   .pp-iframe-container{
-    height:80vh;
+    height:auto;
+    padding-bottom:0;
   }
+    .pp-iframe-wrap{padding:12px;overflow:hidden;}
+  .pp-editbar{background:#fff;border-top:1px solid #e2e2ea;pointer-events:auto;}
+    .pp-prompt-wrap{display:none;}
   .pp-nav{height:auto;padding:8px;}
   .pp-choice-grid{grid-template-columns:1fr;}
 }

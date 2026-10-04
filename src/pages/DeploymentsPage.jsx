@@ -25,11 +25,15 @@ export default function DeploymentsPage() {
   const [copied,      setCopied]      = useState(null)
   const [siteStatus,  setSiteStatus]  = useState({})
   const [tab,         setTab]         = useState('github')
-
+const [versionsByProject, setVersionsByProject] = useState({})
   const fetchAll = useCallback(async () => {
     try {
       const hostRes = await api.get('/hosting/my-sites')
 
+// Per-version GitHub URLs (failure here must not break the page)
+api.get('/hosting/site-versions')
+  .then(d => setVersionsByProject(d.versions || {}))
+  .catch(() => {})
       // GitHub Sites
       const ghSites = hostRes.githubSites || []
       setGithubSites(ghSites)
@@ -236,11 +240,11 @@ export default function DeploymentsPage() {
                      {p.github_repo && (
   <div className="dp-detail-row">
     <span className="dp-detail-label">Repository</span>
-    
+    <a
       href={`https://github.com/${p.github_repo}`}
       target="_blank" rel="noopener noreferrer"
       className="dp-detail-value dp-detail-link dp-mono"
-    <a>
+    >
       {p.github_repo}
     </a>
   </div>
@@ -275,7 +279,43 @@ export default function DeploymentsPage() {
                           </span>
                         </div>
                       </div>
-
+{(versionsByProject[p.id] || []).length > 0 && (
+  <div className="dp-versions">
+    <div className="dp-versions-title">
+      🕘 Deployed versions
+      <span className="dp-versions-count">{versionsByProject[p.id].length}</span>
+    </div>
+    {versionsByProject[p.id].map(v => {
+      const copyId = `v_${p.id}_${v.version_no}`
+      const isCurrentUrl = p.github_url && v.github_url.replace(/v\d+\/$/, '') === p.github_url
+      return (
+        <div key={v.version_no} className="dp-version-row">
+          <div className="dp-version-main">
+            <div className="dp-version-head">
+              <span className="dp-version-tag">v{v.version_no}</span>
+              {v.deployed_at && (
+                <span className="dp-version-date">
+                  {new Date(v.deployed_at).toLocaleString('en-IN', {
+                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                  })}
+                </span>
+              )}
+            </div>
+            <a href={v.github_url} target="_blank" rel="noopener noreferrer" className="dp-version-url">
+              {v.github_url} ↗
+            </a>
+          </div>
+          <button
+            className={`dp-version-copy ${copied === copyId ? 'dp-version-copied' : ''}`}
+            onClick={() => handleCopy(v.github_url, copyId)}
+          >
+            {copied === copyId ? '✅' : '📋'}
+          </button>
+        </div>
+      )
+    })}
+  </div>
+)}
                       
                        
 
@@ -575,7 +615,19 @@ const CSS = `
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
-
+.dp-versions{background:#f8f8fc;border:1.5px solid #e8e8f2;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.dp-versions-title{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:#6b6b7a;text-transform:uppercase;letter-spacing:.4px;}
+.dp-versions-count{background:#0a0a12;color:#fff;font-size:10px;font-weight:800;padding:1px 7px;border-radius:100px;}
+.dp-version-row{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #e2e2ea;border-radius:9px;padding:8px 10px;}
+.dp-version-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.dp-version-head{display:flex;align-items:center;gap:8px;}
+.dp-version-tag{background:rgba(91,79,255,.1);color:#5b4fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;}
+.dp-version-date{font-size:10px;color:#a0a0b0;font-weight:600;}
+.dp-version-url{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#2563eb;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dp-version-url:hover{text-decoration:underline;}
+.dp-version-copy{background:#fff;border:1.5px solid #e2e2ea;border-radius:7px;padding:5px 8px;font-size:12px;cursor:pointer;transition:all .15s;flex-shrink:0;}
+.dp-version-copy:hover{border-color:#0a0a12;}
+.dp-version-copied{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);}
 .dp-root{font-family:'Nunito',sans-serif;max-width:1100px;margin:0 auto;padding:40px 24px 80px;color:#0a0a12;}
 
 .dp-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;}
@@ -703,12 +755,130 @@ const CSS = `
 .dp-btn-copied{background:rgba(34,197,94,.1);color:#15803d;border:1.5px solid rgba(34,197,94,.3);}
 .dp-btn-dark{background:#0a0a12;color:#fff;}
 .dp-btn-dark:hover{background:#c0392b;}
+/* ───────── OVERFLOW FIX (must stay last) ───────── */
+html,body{max-width:100%;overflow-x:hidden;}
 
+.dp-root{width:100%;min-width:0;}
+
+/* let grid columns shrink below their content width */
+.dp-grid{grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr));}
 @media(max-width:700px){
-  .dp-grid{grid-template-columns:1fr;}
-  .dp-actions{grid-template-columns:1fr 1fr;}
-  .dp-header{flex-direction:column;gap:12px;}
-  .dp-back{align-self:flex-start;}
-  .dp-tabs{overflow-x:auto;}
+  .dp-grid{grid-template-columns:minmax(0,1fr);}
+}
+
+/* every flex/grid child in the card must be allowed to shrink */
+.dp-card,
+.dp-card > *,
+.dp-detail-box,
+.dp-detail-row,
+.dp-versions,
+.dp-version-row,
+.dp-version-main,
+.dp-url-row{min-width:0;max-width:100%;}
+
+/* long URLs wrap instead of stretching the card */
+.dp-detail-value,
+.dp-detail-link,
+.dp-card-title,
+.dp-pending-notice{overflow-wrap:anywhere;word-break:break-word;}
+
+/* the live URL span has mono + break-all, make sure it is block level */
+.dp-detail-value{display:block;max-width:100%;}
+.dp-detail-row > .dp-detail-value{flex:1;min-width:0;}
+
+/* version links: single line with ellipsis */
+.dp-version-url{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* header must not overflow */
+@media(max-width:700px){
+  .dp-header{width:100%;}
+  .dp-header > *{min-width:0;}
+  .dp-new-btn{white-space:nowrap;max-width:100%;}
+  .dp-title{overflow-wrap:anywhere;}
+}
+/* ───────── TABLET ───────── */
+@media(max-width:900px){
+  .dp-root{padding:28px 18px 70px;}
+  .dp-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;}
+  .dp-title{font-size:28px;}
+}
+
+/* ───────── MOBILE ───────── */
+@media(max-width:700px){
+  .dp-root{padding:18px 14px 60px;}
+
+  /* header: back + button on one row, title below */
+  .dp-header{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"back new" "title title";gap:12px;align-items:center;margin-bottom:20px;}
+  .dp-back{grid-area:back;justify-self:start;}
+  .dp-new-btn{grid-area:new;justify-self:end;padding:9px 14px;font-size:12px;}
+  .dp-header > div{grid-area:title;}
+  .dp-title{font-size:24px;letter-spacing:-.5px;}
+  .dp-sub{font-size:13px;}
+
+  /* tabs scroll sideways instead of wrapping */
+  .dp-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:20px;}
+  .dp-tabs::-webkit-scrollbar{display:none;}
+  .dp-tab{padding:10px 14px;font-size:12px;white-space:nowrap;flex-shrink:0;}
+
+  .dp-info-banner{font-size:12px;padding:10px 12px;margin-bottom:16px;}
+
+  /* single column cards */
+  .dp-grid{grid-template-columns:1fr;gap:14px;}
+  .dp-card{padding:14px;gap:10px;border-radius:14px;}
+  .dp-card:hover{transform:none;}
+  .dp-card-title{font-size:16px;}
+
+  /* header row of card: date drops under the badges */
+  .dp-card-top{flex-direction:column;gap:6px;}
+
+  /* detail rows stack: label above value */
+  .dp-detail-box{padding:10px 12px;gap:10px;}
+  .dp-detail-row{flex-direction:column;align-items:flex-start;gap:2px;}
+  .dp-detail-label{min-width:0;}
+  .dp-detail-value{font-size:12px;}
+  .dp-mono{font-size:10.5px;}
+
+  .dp-url-row{padding:9px 10px;}
+  .dp-url-text{font-size:10.5px;}
+
+  /* versions list */
+  .dp-versions{padding:9px 10px;}
+  .dp-version-row{padding:8px;}
+  .dp-version-head{flex-wrap:wrap;gap:4px 8px;}
+  .dp-version-url{font-size:10px;}
+  .dp-version-copy{padding:7px 10px;}
+
+  /* preview is smaller; overlay must not block taps */
+  .dp-iframe-clip{height:150px;}
+  .dp-preview-overlay{display:none;}
+
+  /* actions: Visit full width, other two side by side */
+  .dp-actions{grid-template-columns:1fr 1fr;gap:8px;}
+  .dp-actions > :first-child{grid-column:1 / -1;}
+  .dp-btn{padding:11px 6px;font-size:12px;min-height:42px;}
+
+  /* empty states */
+  .dp-empty{padding:50px 10px;}
+  .dp-empty-icon{font-size:52px;}
+  .dp-empty-title{font-size:20px;}
+  .dp-empty-actions{flex-direction:column;width:100%;max-width:300px;}
+  .dp-empty-btn{width:100%;}
+  .dp-tab-empty{padding:40px 10px;}
+}
+
+/* ───────── SMALL PHONES ───────── */
+@media(max-width:380px){
+  .dp-root{padding:14px 10px 50px;}
+  .dp-title{font-size:21px;}
+  .dp-new-btn{font-size:11px;padding:8px 11px;}
+  .dp-card{padding:12px;}
+  .dp-actions{grid-template-columns:1fr;}
+  .dp-actions > :first-child{grid-column:auto;}
+}
+
+/* ───────── TOUCH DEVICES: no hover-only UI ───────── */
+@media(hover:none){
+  .dp-card:hover{transform:none;box-shadow:none;}
+  .dp-preview-overlay{display:none;}
 }
 `

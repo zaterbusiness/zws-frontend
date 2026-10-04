@@ -15,17 +15,17 @@ async function request(method, path, body) {
 
   const data = await res.json().catch(() => ({}))
 
-  if (res.status === 401) {
+if (res.status === 401) {
+  // Only treat it as an expired session if a token was actually sent
+  if (token) {
     localStorage.removeItem('zater_token')
-    // Avoid redirect loops if already on the login page
-    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-      window.location.href = '/login'
-    }
-    const err = new Error(data.error || data.message || 'Session expired. Please log in again.')
-    err.data = data
-    err.status = 401
-    throw err
+    window.dispatchEvent(new Event('zater:unauthorized'))
   }
+  const err = new Error(data.error || data.message || 'Please log in to continue.')
+  err.data = data
+  err.status = 401
+  throw err
+}
 
   if (!res.ok) {
     const err = new Error(data.error || data.message || `Request failed (${res.status})`)

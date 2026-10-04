@@ -191,8 +191,8 @@ const handleCustomize = async () => {
   const handleHost = async () => {
     const htmlToHost = customizedHtml || sourceHtml
     if (!htmlToHost) return
-    const token = localStorage.getItem('zater_token')
-    if (!token) { alert('Please log in first'); return }
+    if (!user) { requireAuth(); return }
+const token = localStorage.getItem('zater_token')
     setHosting(true); setHosted(null)
     try {
       const base = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
@@ -321,7 +321,7 @@ export default function Home() {
 
   const textareaRef = useRef(null)
   const heroRef     = useRef(null)
-  const { user, logout } = useAuth()
+  const { user, logout, requireAuth } = useAuth()
   const navigate         = useNavigate()
 
 const [attachedLogo, setAttachedLogo] = useState(null) 
@@ -329,7 +329,10 @@ const logoInputRef = useRef(null)
 const [clarifyQuestions, setClarifyQuestions] = useState(null) // null = not asked yet
 const [clarifyAnswers, setClarifyAnswers] = useState({})
 const [checkingClarity, setCheckingClarity] = useState(false)
-
+useEffect(() => {
+  const saved = sessionStorage.getItem('zws_pending_prompt')
+  if (saved) { setPrompt(saved); sessionStorage.removeItem('zws_pending_prompt') }
+}, [])
 useEffect(() => {
   const canvas = document.getElementById('zws-bg-canvas')
   if (!canvas) return
@@ -445,8 +448,9 @@ setRecentProjects(websitesOnly.slice(0, 4))
 setRecentApps((ad.apps || []).slice(0, 4))
       } catch {} finally { setRecentLoading(false) }
     }
+    if (!user) { setRecentProjects([]); setRecentApps([]); setRecentLoading(false); return }
     fetchRecent()
-  }, [])
+  }, [user])
 
   const handleInput = e => {
     setPrompt(e.target.value)
@@ -468,6 +472,14 @@ useEffect(() => {
 const handleGenerate = async (customPrompt) => {
   const p = (customPrompt || prompt).trim()
   if (!p) return
+
+  // ADD:
+  if (!user) {
+    sessionStorage.setItem('zws_pending_prompt', p)
+    requireAuth()
+    return
+  }
+
   if ((user?.credits ?? 0) < 100) {
     setError('Insufficient credits. You need 100 credits to generate. Please purchase more credits.')
     return
@@ -599,50 +611,73 @@ const removeLogo = () => {
 
         {/* ══ NAVBAR ══ */}
         <nav className="h-nav">
-          <div className="h-nav-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src={zaterLogo} alt="Zater Logo" className="h-logo-img" />
-           <span className="h-logo-text">ZATER WEB STUDIO</span>
-          </div>
-          <div className="h-nav-right">
-            <button className="h-nav-link" onClick={() => navigate('/projects')}>My Projects</button>
-            <button className="h-nav-link" onClick={() => navigate('/apps')}>My Apps</button>
-            <button className="h-nav-link" onClick={() => navigate('/payments')}>Payments</button>
-            <button className="h-nav-link h-nav-deploy" onClick={() => navigate('/deployments')}>🚀 Deployments</button>
-            <button className="h-nav-link h-nav-free" onClick={() => document.getElementById('tpl-gallery').scrollIntoView({ behavior: 'smooth' })}>🎨 Free Templates</button>
-            <button className="h-nav-credits" onClick={() => navigate('/credits')}>
-              <NavCreditsBadge
+  <div className="h-nav-logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+    <img src={zaterLogo} alt="Zater Logo" className="h-logo-img" />
+    <span className="h-logo-text">ZATER WEB STUDIO</span>
+  </div>
+<div className="h-nav-right">
+  {/* Visible to everyone */}
+  <button className="h-nav-link h-nav-free" onClick={() => document.getElementById('tpl-gallery')?.scrollIntoView({ behavior: 'smooth' })}>🎨 Free Templates</button>
+
+  {user ? (
+    <>
+      <button className="h-nav-link" onClick={() => navigate('/projects')}>My Projects</button>
+      <button className="h-nav-link" onClick={() => navigate('/apps')}>My Apps</button>
+      <button className="h-nav-link" onClick={() => navigate('/payments')}>Payments</button>
+      <button className="h-nav-link h-nav-deploy" onClick={() => navigate('/deployments')}>🚀 Deployments</button>
+
+      <button className="h-nav-credits" onClick={() => navigate('/credits')}>
+        <NavCreditsBadge
   credits={user?.credits ?? 0}
   onClick={() => navigate('/credits')}
 />
-            </button>
-            <div className="h-avatar-wrap" ref={menuRef}>
-              <button className="h-avatar" onClick={() => setMenuOpen(o => !o)}>
-                {user?.avatar?.startsWith('http')
-                  ? <img src={user.avatar} alt="" style={{width:36,height:36,borderRadius:'50%',objectFit:'cover'}}/>
-                  : <span style={{fontSize:15,fontWeight:700}}>{user?.name?.[0]?.toUpperCase() || '👤'}</span>}
-              </button>
-              {menuOpen && (
-                <div className="h-menu">
-                  <div className="h-menu-user">
-                    <div className="h-menu-name">{user?.name}</div>
-                    <div className="h-menu-email">{user?.email}</div>
-                  </div>
-                  <div className="h-menu-sep" />
-                  <button className="h-menu-item" onClick={() => { navigate('/projects'); setMenuOpen(false) }}>📁 My Projects</button>
-                  <button className="h-menu-item" onClick={() => { navigate('/apps'); setMenuOpen(false) }}>⚛️ My Apps</button>
-                  <button className="h-menu-item" onClick={() => { navigate('/payments'); setMenuOpen(false) }}>💳 Payment History</button>
-                  <button className="h-menu-item" onClick={() => { navigate('/deployments'); setMenuOpen(false) }}>🚀 My Deployments</button>
-                  <button className="h-menu-item" onClick={() => { navigate('/settings'); setMenuOpen(false) }}>⚙️ Settings</button>
-                  {user?.role === 'admin' && (
-                    <button className="h-menu-item" onClick={() => { navigate('/admin-login'); setMenuOpen(false) }}>🔐 Admin Panel</button>
-                  )}
-                  <div className="h-menu-sep" />
-                  <button className="h-menu-item h-menu-logout" onClick={() => { logout(); setMenuOpen(false) }}>🚪 Sign Out</button>
-                </div>
-              )}
+      </button>
+
+      <div className="h-avatar-wrap" ref={menuRef}>
+        <button className="h-avatar" onClick={() => setMenuOpen(o => !o)}>
+          {user?.avatar?.startsWith('http')
+            ? <img src={user.avatar} alt="" style={{width:36,height:36,borderRadius:'50%',objectFit:'cover'}}/>
+            : <span style={{fontSize:15,fontWeight:700}}>{user?.name?.[0]?.toUpperCase() || '👤'}</span>}
+        </button>
+        {menuOpen && (
+          <div className="h-menu">
+            <div className="h-menu-user">
+              <div className="h-menu-name">{user?.name}</div>
+              <div className="h-menu-email">{user?.email}</div>
             </div>
+            <div className="h-menu-sep" />
+            <button className="h-menu-item" onClick={() => { navigate('/projects'); setMenuOpen(false) }}>📁 My Projects</button>
+            <button className="h-menu-item" onClick={() => { navigate('/apps'); setMenuOpen(false) }}>⚛️ My Apps</button>
+            <button className="h-menu-item" onClick={() => { navigate('/payments'); setMenuOpen(false) }}>💳 Payment History</button>
+            <button className="h-menu-item" onClick={() => { navigate('/deployments'); setMenuOpen(false) }}>🚀 My Deployments</button>
+            <button className="h-menu-item" onClick={() => { navigate('/settings'); setMenuOpen(false) }}>⚙️ Settings</button>
+            {user?.role === 'admin' && (
+              <button className="h-menu-item" onClick={() => { navigate('/admin-login'); setMenuOpen(false) }}>🔐 Admin Panel</button>
+            )}
+            <div className="h-menu-sep" />
+            <button className="h-menu-item h-menu-logout" onClick={() => { logout(); setMenuOpen(false) }}>🚪 Sign Out</button>
           </div>
-        </nav>
+        )}
+      </div>
+    </>
+  ) : (
+    <>
+      {/* Guest: credits button shows 100, click goes to login */}
+      <button
+        className="h-nav-credits"
+        onClick={() => navigate('/login', { state: { from: '/credits' } })}
+      >
+        <NavCreditsBadge
+  credits={100}
+  onClick={() => navigate('/login', { state: { from: '/credits' } })}
+/>
+      </button>
+      <button className="h-nav-login" onClick={() => navigate('/login')}>Log in</button>
+      <button className="h-nav-signup" onClick={() => navigate('/signup')}>Sign up</button>
+    </>
+  )}
+</div>
+</nav>
 
         {/* ══ HERO ══ */}
         <section className="h-hero" ref={heroRef}>
@@ -746,7 +781,7 @@ const removeLogo = () => {
   </div>
 )}
 
-          {(user?.credits ?? 0) < 100 && (
+          {user && (user.credits ?? 0) < 100 && (
             <div className="h-low-credits-banner">
               <span>⚠️ You have <strong>{user?.credits ?? 0} credits</strong> — need 100 to generate.</span>
               <button className="h-low-credits-btn" onClick={() => navigate('/credits')}>⚡ Buy 100 Credits — ₹99</button>
@@ -812,14 +847,14 @@ const removeLogo = () => {
 </button> */}
 
                         <div className="apt-free-actions">
-                          <button className="apt-free-dl-btn" onClick={() => {
-                            const html = window.ZATER_APP_HTML?.[tpl.id]
-                            if (!html) { alert('Template not loaded. Make sure loadAppTemplates.js is imported in main.jsx'); return }
-                            const blob = new Blob([html], { type: 'text/html' })
-                            const url = URL.createObjectURL(blob)
-                            const a = document.createElement('a')
-                            a.href = url; a.download = `zater-${tpl.id}-app.html`; a.click(); URL.revokeObjectURL(url)
-                          }}>⬇️ Download Free</button>
+                          <button className="apt-free-dl-btn" onClick={() => requireAuth(() => {
+  const html = window.ZATER_APP_HTML?.[tpl.id]
+  if (!html) { alert('Template not loaded. Make sure loadAppTemplates.js is imported in main.jsx'); return }
+  const blob = new Blob([html], { type: 'text/html' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = `zater-${tpl.id}-app.html`; a.click(); URL.revokeObjectURL(url)
+})}>⬇️ Download Free</button>    
 
                           <button className="apt-free-host-btn" disabled={isHosting}
                             onClick={() => {
@@ -1187,14 +1222,14 @@ const removeLogo = () => {
               })()}
             </div>
             <div className="apt-modal-actions">
-              <button className="apt-dl-btn" onClick={() => {
-                const html = window.ZATER_APP_HTML?.[appTplModal.id]
-                if (!html) { alert('Template HTML not found.'); return }
-                const blob = new Blob([html], { type: 'text/html' })
-                const url = URL.createObjectURL(blob)
-                const a = document.createElement('a')
-                a.href = url; a.download = `zater-${appTplModal.id}-app.html`; a.click(); URL.revokeObjectURL(url)
-              }}>⬇️ Download HTML</button>
+              <button className="apt-dl-btn" onClick={() => requireAuth(() => {
+  const html = window.ZATER_APP_HTML?.[appTplModal.id]
+  if (!html) { alert('Template HTML not found.'); return }
+  const blob = new Blob([html], { type: 'text/html' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = `zater-${appTplModal.id}-app.html`; a.click(); URL.revokeObjectURL(url)
+})}>⬇️ Download HTML</button>
               {/* <button className="apt-customize-modal-btn"
                 onClick={() => { setAppTplModal(null); setCustomizeModal({ template: appTplModal, templateType: 'app' }) }}>
                 ✏️ Customize Free
@@ -1846,4 +1881,18 @@ const CSS = `
 .h-logo-chip-name{font-size:11px;font-weight:600;color:#3a3a4a;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .h-logo-chip-remove{background:transparent;border:none;color:#a0a0b0;cursor:pointer;font-size:11px;padding:0 2px;}
 .h-logo-chip-remove:hover{color:#ef4444;}
+.h-nav-login{padding:7px 14px;border-radius:8px;background:transparent;border:1.5px solid #e2e2ea;font-size:13px;font-weight:700;color:#3a3a4a;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .18s;}
+.h-nav-login:hover{border-color:#c0392b;color:#c0392b;}
+.h-nav-signup{padding:8px 16px;border-radius:8px;background:#c0392b;border:none;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 2px 10px rgba(192,57,43,0.3);transition:all .18s;}
+.h-nav-signup:hover{opacity:.88;}
+.h-nav-credits{
+  display:flex;
+  align-items:center;
+  padding:0;
+  background:none;
+  border:none;
+  border-radius:0;
+  cursor:pointer;
+}
+.h-nav-credits:hover{background:none;border:none;}
 `

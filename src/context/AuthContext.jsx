@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import api from '../utils/api'
-
+import { useNavigate, useLocation } from 'react-router-dom'
 const AuthContext = createContext(null)
 
 export const useAuth = () => {
@@ -12,7 +12,8 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user,    setUser]    = useState(null)
   const [loading, setLoading] = useState(true)
-
+const navigate = useNavigate()
+const location = useLocation()
   // ── Load user on mount ──────────────────────────────────────
   useEffect(() => {
     const token = api.getToken()
@@ -22,7 +23,11 @@ export const AuthProvider = ({ children }) => {
       .catch(() => { api.clearToken(); setUser(null) })
       .finally(() => setLoading(false))
   }, [])
-
+useEffect(() => {
+  const onUnauthorized = () => setUser(null)
+  window.addEventListener('zater:unauthorized', onUnauthorized)
+  return () => window.removeEventListener('zater:unauthorized', onUnauthorized)
+}, [])
   // ── Email/password login ────────────────────────────────────
   const login = async (email, password) => {
     const d = await api.post('/auth/login', { email, password })
@@ -61,7 +66,12 @@ export const AuthProvider = ({ children }) => {
     setUser(d.user)
     return d.user
   }
-
+// Run `action` if logged in, otherwise send to login and come back after
+const requireAuth = (action) => {
+  if (user) { action?.(); return true }
+  navigate('/login', { state: { from: location.pathname + location.search } })
+  return false
+}
   // ── Logout ──────────────────────────────────────────────────
   const logout = () => {
     api.clearToken()
@@ -73,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, setUser, login, signup, loginWithGoogle, sendOTP, loginWithOTP, logout }}>
+    <AuthContext.Provider value={{ user, loading, setUser, login, signup, loginWithGoogle, sendOTP, loginWithOTP, logout, requireAuth }}>
       {children}
     </AuthContext.Provider>
   )
