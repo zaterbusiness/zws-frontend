@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 const DEVICE_SIZES = {
   laptop: { width: 1280, height: 800 },
-  mobile: { width: 375,  height: 600 },
+  mobile: { width: 375,  height: 640 },
 }
 export default function ProjectPage() {
   const { id }    = useParams()
