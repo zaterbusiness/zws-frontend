@@ -7,6 +7,7 @@ import api from '../utils/api'
 //  LUXURY TEMPLATES  — fully pre-written HTML, 100% FREE
 //  Users can: Download ZIP for free  OR  Deploy to GitHub Pages for free
 // ══════════════════════════════════════════════════════════════
+
 const LUXURY_TEMPLATES = [
   {
     id: 'hotel',
@@ -349,6 +350,534 @@ const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersec
 document.querySelectorAll('.room-card,.amenity,.testi-card,.stat-item').forEach(el=>{el.style.opacity='0';obs.observe(el);});
 </script>
 </body></html>`
+  },
+    {
+    id: 'watches',
+    name: 'Volex Watches',
+    category: 'Luxury / Retail',
+    catColor: '#ff6a2b',
+    catBg: 'rgba(255,106,43,0.12)',
+    desc: 'Scroll-driven 3D automatic watch with exploded-layer view, dial colour switcher, live ticking hands and reservation form',
+    tags: ['3D Three.js', 'Scroll Animation', 'Dial Switcher', 'Live Clock'],
+    liveUrl: 'https://zaterbusiness.github.io/volex-watches/',
+    heroImg: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=800&q=80',
+    preview: `<!DOCTYPE html><html><head><style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a1a2b;color:#e6eef6;font-family:'Helvetica Neue',sans-serif;overflow-x:hidden;width:100%;}
+@keyframes sweep{to{transform:rotate(360deg)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+nav{padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:13px;font-weight:800;letter-spacing:5px}
+.nav-links a{font-size:8px;letter-spacing:2px;color:#aab4bf;text-decoration:none;text-transform:uppercase;margin-left:12px}
+.hero{height:210px;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:0 18px;background:radial-gradient(110% 90% at 75% 25%,#12304d,#0a1a2b)}
+.big{font-size:34px;font-weight:800;letter-spacing:4px;line-height:1}
+.sub{font-size:9px;color:#b7c8da;margin-top:8px;letter-spacing:1px}
+.btn{display:inline-block;background:#ff6a2b;color:#1b0c02;padding:6px 14px;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:4px;margin-top:12px}
+.watch{justify-self:center;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e3e9ee,#7e8d9b 55%,#26323e);padding:11px;animation:bob 4s ease-in-out infinite;box-shadow:0 14px 30px rgba(0,0,0,.5)}
+.dial{position:relative;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle,#1d5f9a,#0b2a49);display:flex;align-items:center;justify-content:center}
+.dial b{position:absolute;top:30%;font-size:9px;letter-spacing:2px}
+.hand{position:absolute;bottom:50%;left:calc(50% - 1px);width:2px;height:44px;background:#ff6a2b;transform-origin:bottom center;animation:sweep 60s linear infinite}
+.hand.m{height:38px;width:3px;background:#e9eef2;animation-duration:3600s}
+.dot{width:7px;height:7px;border-radius:50%;background:#ff6a2b;position:relative;z-index:2}
+.specs{display:grid;grid-template-columns:repeat(4,1fr);background:#dde3e8;color:#0e1822}
+.s{text-align:center;padding:12px 4px;border-right:1px solid rgba(0,0,0,.08)}
+.s:last-child{border-right:none}
+.sn{font-size:15px;font-weight:700}
+.sl{font-size:7px;letter-spacing:1px;color:#46576a;text-transform:uppercase;margin-top:2px}
+.models{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:12px 16px;background:#dde3e8}
+.m1{border:1.5px solid #aab4bf;border-radius:8px;padding:8px;color:#0e1822;font-size:9px;font-weight:700;display:flex;align-items:center;gap:6px}
+.m1.on{border-color:#ff6a2b;background:rgba(255,106,43,.1)}
+.m1 i{width:14px;height:14px;border-radius:50%;border:2px solid #aab4bf;flex:none}
+</style></head><body>
+<nav><div class="logo">VOLEX</div><div><a href="#">Craft</a><a href="#">Inside</a><a href="#">Collection</a></div></nav>
+<div class="hero">
+  <div><div class="big">VOLEX</div><div class="sub">Automatic watches built to the second.</div><div class="btn">View the collection</div></div>
+  <div class="watch"><div class="dial"><b>VOLEX</b><div class="hand m"></div><div class="hand"></div><div class="dot"></div></div></div>
+</div>
+<div class="specs">
+  <div class="s"><div class="sn">40 mm</div><div class="sl">Case</div></div>
+  <div class="s"><div class="sn">11.5 mm</div><div class="sl">Thickness</div></div>
+  <div class="s"><div class="sn">200 m</div><div class="sl">Water Res.</div></div>
+  <div class="s"><div class="sn">42 h</div><div class="sl">Reserve</div></div>
+</div>
+<div class="models">
+  <div class="m1 on"><i style="background:#12406b"></i>Tide</div>
+  <div class="m1"><i style="background:#2b2f33"></i>Slate</div>
+  <div class="m1"><i style="background:#1f4a35"></i>Fern</div>
+</div>
+</body></html>`,
+    fullHtml: `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Volex Watches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--abyss:#0a1a2b;--deep:#12304d;--steel:#aab4bf;--orange:#ff6a2b;--mist:#dde3e8;--ink:#0e1822;--muted:#46576a;
+--head:"Bricolage Grotesque",system-ui,sans-serif;--body:"Instrument Sans",system-ui,sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--mist:#0f1a25;--ink:#e3eaf1;--muted:#9fb0c1}}
+:root[data-theme="dark"]{--mist:#0f1a25;--ink:#e3eaf1;--muted:#9fb0c1}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--abyss);font-family:var(--body);color:var(--ink);line-height:1.6;font-size:1.05rem}
+canvas#gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+section{position:relative;min-height:100vh;display:flex;align-items:center;padding:6rem 6vw}
+.in{position:relative;z-index:2;width:100%;max-width:1100px;margin:0 auto}
+.dark{background:radial-gradient(110% 90% at 75% 25%,var(--deep),var(--abyss));color:#e6eef6}
+.light{background:var(--mist)}
+.half{max-width:32rem}.right{margin-left:auto}
+h1,h2,h3{font-family:var(--head);margin:0 0 1rem;line-height:1}
+h1{font-weight:800;font-size:clamp(4rem,14vw,10.5rem);letter-spacing:.04em}
+h1 span{display:inline-block;animation:slide 1s cubic-bezier(.2,.8,.2,1) both}
+h2{font-weight:700;font-size:clamp(2.1rem,4.6vw,3.4rem);letter-spacing:-.01em}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0 0 1rem;max-width:32rem}
+.light p{color:var(--muted)}
+.lede{font-size:1.3rem;color:#b7c8da;max-width:24rem}
+.btn{display:inline-block;padding:.9rem 1.7rem;border-radius:6px;background:var(--orange);color:#1b0c02;font:inherit;font-weight:600;text-decoration:none;border:0;cursor:pointer}
+.btn.ghost{background:transparent;color:#e6eef6;border:1.5px solid var(--steel);margin-left:.6rem}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+nav{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:1rem 6vw;color:#e6eef6}
+nav b{font-family:var(--head);font-weight:800;letter-spacing:.18em}
+nav a{color:inherit;text-decoration:none;margin-left:1.4rem;font-weight:500}
+nav a:hover{color:var(--orange)}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:1.4rem;border-top:1px solid var(--steel)}
+.specs div{padding:.9rem 0;border-bottom:1px solid color-mix(in srgb,var(--steel) 50%,transparent)}
+.specs dt{font-family:var(--head);font-size:1.7rem;font-weight:700;line-height:1.1}
+.specs dd{margin:0;color:var(--muted);font-size:.95rem}
+.dark .specs dd{color:#a9bccf}
+.models{display:grid;gap:.8rem;margin:1.4rem 0}
+.models button{display:flex;align-items:center;gap:1rem;text-align:left;padding:1rem 1.2rem;border-radius:10px;border:1.5px solid var(--steel);background:transparent;color:var(--ink);font:inherit;cursor:pointer}
+.models button[aria-pressed=true]{border-color:var(--orange);background:color-mix(in srgb,var(--orange) 10%,transparent)}
+.models i{width:2.2rem;height:2.2rem;border-radius:50%;border:3px solid var(--steel);flex:none}
+.models b{display:block;font-family:var(--head)}
+.models small{color:var(--muted)}
+.field{display:block;width:100%;max-width:26rem;margin-bottom:.9rem;padding:.8rem 1rem;border-radius:8px;border:1.5px solid var(--muted);background:transparent;color:var(--ink);font:inherit}
+.field option{color:#0e1822}
+#msg{margin-top:1rem;font-weight:500;color:#1f7a4a;min-height:1.5rem}
+footer.site{position:relative;z-index:2;background:var(--abyss);color:#9fb2c6;padding:2rem 6vw;text-align:center;font-size:.9rem}
+@keyframes slide{from{opacity:0;transform:translateX(-40%)}to{opacity:1;transform:none}}
+@media (max-width:800px){canvas#gl{opacity:.3}.half{max-width:none}.right{margin-left:0}.btn.ghost{margin:.8rem 0 0}nav a{display:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}h1 span{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<nav><b>VOLEX</b><div><a href="#craft">Craft</a><a href="#inside">Inside</a><a href="#collection">Collection</a><a href="#reserve">Reserve</a></div></nav>
+
+<section class="dark"><div class="in">
+ <h1 aria-label="Volex"><span style="animation-delay:.1s">V</span><span style="animation-delay:.2s">O</span><span style="animation-delay:.3s">L</span><span style="animation-delay:.4s">E</span><span style="animation-delay:.5s">X</span></h1>
+ <p class="lede">Automatic watches built to the second.</p>
+ <a class="btn" href="#collection">View the collection</a><a class="btn ghost" href="#inside">Look inside</a>
+</div></section>
+
+<section class="light" id="craft"><div class="in"><div class="half right">
+ <h2>A 40 mm case that wears light.</h2>
+ <p>Volex watches are cut from 316L steel, polished by hand and tested to 200 metres. The case is slim enough to slide under a cuff and tough enough to forget about.</p>
+ <dl class="specs">
+  <div><dt>40 mm</dt><dd>Case diameter</dd></div>
+  <div><dt>11.5 mm</dt><dd>Case thickness</dd></div>
+  <div><dt>200 m</dt><dd>Water resistance</dd></div>
+  <div><dt>42 hours</dt><dd>Power reserve</dd></div>
+ </dl>
+</div></div></section>
+
+<section class="dark" id="inside"><div class="in"><div class="half">
+ <h2>Built in layers.</h2>
+ <p class="lede" style="font-size:1.1rem;max-width:28rem">Scroll to pull the watch apart: sapphire crystal, hands, dial and steel case, each finished on its own.</p>
+ <p style="color:#a9bccf">The self-winding movement sits behind the dial. Every watch is regulated and timed for several days before it leaves the workshop.</p>
+</div></div></section>
+
+<section class="light" id="collection"><div class="in"><div class="half right">
+ <h2>Choose your dial.</h2>
+ <p>Three dials, one case. Tap a model and the watch changes.</p>
+ <div class="models" role="group" aria-label="Models">
+  <button type="button" aria-pressed="true" data-i="0"><i style="background:#12406b"></i><span><b>Volex Tide</b><small>Deep sea blue. Price on request</small></span></button>
+  <button type="button" aria-pressed="false" data-i="1"><i style="background:#2b2f33"></i><span><b>Volex Slate</b><small>Graphite grey. Price on request</small></span></button>
+  <button type="button" aria-pressed="false" data-i="2"><i style="background:#1f4a35"></i><span><b>Volex Fern</b><small>Forest green. Price on request</small></span></button>
+ </div>
+</div></div></section>
+
+<section class="dark" id="reserve"><div class="in"><div class="half">
+ <h2>Reserve yours.</h2>
+ <p class="lede" style="font-size:1.1rem;max-width:28rem">Each batch is small. Leave your details and we'll write to you when it's ready.</p>
+ <input class="field" id="nm" placeholder="Your name" aria-label="Your name" autocomplete="name">
+ <input class="field" id="em" placeholder="Email address" aria-label="Email address" type="email" autocomplete="email">
+ <select class="field" id="md" aria-label="Model"><option>Volex Tide</option><option>Volex Slate</option><option>Volex Fern</option></select>
+ <button class="btn" id="go" type="button">Reserve a watch</button>
+ <div id="msg" role="status" style="color:#8fe0b0"></div>
+</div></div></section>
+<footer class="site">Volex Watches. Assembled and tested by hand.</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+var names=['Volex Tide','Volex Slate','Volex Fern'],cur=0;
+var btns=[].slice.call(document.querySelectorAll('.models button'));
+function pick(i){cur=i;btns.forEach(function(b,k){b.setAttribute('aria-pressed',k===i)});document.getElementById('md').selectedIndex=i;if(window.__dial)window.__dial(i)}
+btns.forEach(function(b,k){b.addEventListener('click',function(){pick(k)})});
+document.getElementById('md').addEventListener('change',function(e){pick(e.target.selectedIndex)});
+document.getElementById('go').addEventListener('click',function(){
+ var n=document.getElementById('nm').value.trim(),e=document.getElementById('em').value.trim(),m=document.getElementById('msg');
+ if(!n||e.indexOf('@')<1){m.style.color='#ffb089';m.textContent='Enter your name and a valid email address.';return}
+ m.style.color='#8fe0b0';m.textContent='Thank you, '+n+'. We will email '+e+' about your '+names[cur]+'.';
+});
+(function(){
+try{
+ var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,TAU=Math.PI*2;
+ var R=new THREE.WebGLRenderer({canvas:document.getElementById('gl'),alpha:true,antialias:true});
+ R.setPixelRatio(Math.min(devicePixelRatio,2));R.outputEncoding=THREE.sRGBEncoding;
+ var S=new THREE.Scene(),C=new THREE.PerspectiveCamera(38,1,.1,60);C.position.z=8;
+
+ var ec=document.createElement('canvas');ec.width=512;ec.height=256;var ex=ec.getContext('2d');
+ var g=ex.createLinearGradient(0,0,0,256);g.addColorStop(0,'#dfe8f0');g.addColorStop(.5,'#7e8d9b');g.addColorStop(1,'#101a24');
+ ex.fillStyle=g;ex.fillRect(0,0,512,256);ex.fillStyle='#fff';ex.fillRect(60,40,90,60);ex.fillRect(300,30,140,40);ex.fillStyle='#ffd9c2';ex.fillRect(220,110,40,70);
+ var et=new THREE.CanvasTexture(ec);et.mapping=THREE.EquirectangularReflectionMapping;et.encoding=THREE.sRGBEncoding;
+ var pm=new THREE.PMREMGenerator(R);S.environment=pm.fromEquirectangular(et).texture;
+ var dl=new THREE.DirectionalLight(0xffffff,1.2);dl.position.set(3,4,6);S.add(dl);S.add(new THREE.AmbientLight(0xffffff,.35));
+
+ var steel=new THREE.MeshStandardMaterial({color:0xc9d0d7,metalness:1,roughness:.22});
+ var W=new THREE.Group(),gCase=new THREE.Group(),gDial=new THREE.Group(),gHands=new THREE.Group(),gGlass=new THREE.Group();
+ var body=new THREE.Mesh(new THREE.CylinderGeometry(1.22,1.22,.3,80),steel);body.rotation.x=Math.PI/2;gCase.add(body);
+ var bez=new THREE.Mesh(new THREE.TorusGeometry(1.12,.11,24,100),steel);bez.position.z=.17;gCase.add(bez);
+ [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(p){var l=new THREE.Mesh(new THREE.BoxGeometry(.3,.6,.26),steel);l.position.set(p[0]*.62,p[1]*1.3,0);gCase.add(l)});
+ var crown=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,.28,24),steel);crown.rotation.z=Math.PI/2;crown.position.x=1.34;gCase.add(crown);
+ var sm=new THREE.MeshStandardMaterial({color:0x1b1410,roughness:.85,metalness:0});
+ [2.45,-2.45].forEach(function(y){var s=new THREE.Mesh(new THREE.BoxGeometry(.98,2,.1),sm);s.position.set(0,y,-.03);gCase.add(s)});
+
+ var dc=document.createElement('canvas');dc.width=dc.height=1024;var dx=dc.getContext('2d');
+ var dt=new THREE.CanvasTexture(dc);dt.encoding=THREE.sRGBEncoding;dt.anisotropy=8;
+ var DIALS=[['#1d5f9a','#0b2a49'],['#4a5057','#16191c'],['#2f7a55','#0f2b1e']];
+ function drawDial(i){
+  var c=512,gr=dx.createRadialGradient(c,c,40,c,c,c);gr.addColorStop(0,DIALS[i][0]);gr.addColorStop(1,DIALS[i][1]);
+  dx.fillStyle=gr;dx.fillRect(0,0,1024,1024);dx.strokeStyle='#e8f0f6';
+  for(var k=0;k<60;k++){var a=k/60*TAU,big=k%5===0;dx.lineWidth=big?0:4;
+   if(!big){dx.beginPath();dx.moveTo(c+Math.sin(a)*450,c-Math.cos(a)*450);dx.lineTo(c+Math.sin(a)*475,c-Math.cos(a)*475);dx.stroke()}}
+  dx.fillStyle='#f1f6d8';
+  for(var h=0;h<12;h++){dx.save();dx.translate(c,c);dx.rotate(h/12*TAU);dx.fillRect(-14,-470,28,h%3===0?110:70);dx.restore()}
+  dx.fillStyle='#f4f8fb';dx.textAlign='center';dx.font='800 84px "Bricolage Grotesque",sans-serif';dx.fillText('VOLEX',c,360);
+  dx.font='500 30px "Instrument Sans",sans-serif';dx.fillText('AUTOMATIC  200 m',c,720);
+  dx.fillStyle='#f4f8fb';dx.fillRect(700,478,110,64);dx.fillStyle='#0b1a2a';dx.font='700 44px "Instrument Sans",sans-serif';dx.fillText(new Date().getDate(),755,525);
+  dt.needsUpdate=true;
+ }
+ drawDial(0);window.__dial=drawDial;
+ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){drawDial(cur)});
+ var dial=new THREE.Mesh(new THREE.CircleGeometry(1.02,80),new THREE.MeshStandardMaterial({map:dt,roughness:.55,metalness:.1}));dial.position.z=.15;gDial.add(dial);
+
+ function hand(w,len,tail,col,z){var geo=new THREE.BoxGeometry(w,len+tail,.03);geo.translate(0,(len-tail)/2,0);
+  var m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:col,metalness:.6,roughness:.3}));var p=new THREE.Group();m.position.z=z;p.add(m);gHands.add(p);return p}
+ var hh=hand(.1,.55,.08,0xe9eef2,.19),mh=hand(.07,.86,.1,0xe9eef2,.21),sh=hand(.022,.92,.22,0xff6a2b,.23);
+ var cap=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.06,24),new THREE.MeshStandardMaterial({color:0xff6a2b,metalness:.6,roughness:.3}));cap.rotation.x=Math.PI/2;cap.position.z=.25;gHands.add(cap);
+ var glass=new THREE.Mesh(new THREE.CircleGeometry(1.03,80),new THREE.MeshPhysicalMaterial({color:0xffffff,transparent:true,opacity:.12,roughness:0,clearcoat:1,metalness:0}));glass.position.z=.285;gGlass.add(glass);
+ W.add(gCase,gDial,gHands,gGlass);S.add(W);
+
+ var mob=function(){return innerWidth<800};
+ var P=[{x:2.1,ry:-.4,rx:.12,e:0,s:1},{x:-2.2,ry:.85,rx:.1,e:0,s:1.05},{x:2.2,ry:-.55,rx:.55,e:1,s:.95},{x:-2.2,ry:.1,rx:.05,e:0,s:1.1},{x:2.1,ry:-.3,rx:.1,e:0,s:1}];
+ var secs=[].slice.call(document.querySelectorAll('section')),T={x:2.1,ry:-.4,rx:.12,e:0,s:1},mx=0,my=0,t0=performance.now(),spin=0;
+ addEventListener('pointermove',function(e){mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
+ function size(){R.setSize(innerWidth,innerHeight,false);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()}
+ addEventListener('resize',size);size();
+ var ease=function(x){return 1-Math.pow(1-x,3)};
+ window.__dial=function(i){drawDial(i);if(!reduce)spin=TAU};
+
+ (function frame(){
+  var t=(performance.now()-t0)/1000,vh=innerHeight,i=0;
+  for(var k=0;k<secs.length;k++){if(secs[k].getBoundingClientRect().top<=vh*.5)i=k}
+  var r=secs[i].getBoundingClientRect(),f=Math.min(1,Math.max(0,(vh*.5-r.top)/r.height));f=f*f*(3-2*f);
+  var a=P[i],b=P[Math.min(i+1,P.length-1)],tg={};
+  ['x','ry','rx','e','s'].forEach(function(n){tg[n]=a[n]+(b[n]-a[n])*f});
+  var kk=reduce?1:.08;for(var n in tg)T[n]+=(tg[n]-T[n])*kk;
+  spin*=.92;if(spin<.001)spin=0;
+  var fl=reduce?0:Math.sin(t*1.1)*.07;
+  W.position.set(mob()?0:T.x,fl,0);W.scale.setScalar(T.s*(mob()?.75:1));
+  W.rotation.set(T.rx+my*.2,T.ry+mx*.4+(reduce?0:Math.sin(t*.5)*.07)+spin,0);
+  gGlass.position.z=T.e*1.5;gHands.position.z=T.e*.9;gDial.position.z=T.e*.2;gCase.position.z=-T.e*.7;
+  var d=new Date(),sec=d.getSeconds()+d.getMilliseconds()/1000,mn=d.getMinutes()+sec/60,hr=(d.getHours()%12)+mn/60;
+  var it=reduce?1:ease(Math.min(1,t/2.6));
+  sh.rotation.z=-(sec/60*TAU+(1-it)*TAU*3);mh.rotation.z=-(mn/60*TAU)*it;hh.rotation.z=-(hr/12*TAU)*it;
+  R.render(S,C);requestAnimationFrame(frame);
+ })();
+}catch(e){document.getElementById('gl').style.display='none';console.error(e)}
+})();
+</script>
+</body>
+</html>`
+  },  {
+    id: 'herbaloil',
+    name: 'Aathis Herbal Oil',
+    category: 'Wellness / Retail',
+    catColor: '#8fb339',
+    catBg: 'rgba(143,179,57,0.12)',
+    desc: 'Scroll-driven 3D herbal hair oil bottle with floating leaves, herb story, process steps, testimonials and order request form',
+    tags: ['3D Three.js', 'Floating Leaves', 'Scroll Animation', 'Order Form'],
+    liveUrl: 'https://zaterbusiness.github.io/aathis-herbal-oil/',
+    heroImg: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=800&q=80',
+    preview: `<!DOCTYPE html><html><head><style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#12301f;color:#eaf2dc;font-family:'Georgia',serif;overflow-x:hidden;width:100%;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0);opacity:0}15%{opacity:1}100%{transform:translateY(230px) rotate(240deg);opacity:0}}
+nav{padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:15px}
+.nav-links a{font-size:8px;letter-spacing:2px;color:#cfe0b8;text-decoration:none;text-transform:uppercase;margin-left:12px;font-family:'Helvetica Neue',sans-serif}
+.hero{position:relative;height:210px;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:0 18px;background:radial-gradient(120% 90% at 70% 20%,#1f4a30,#12301f);overflow:hidden}
+.leaf{position:absolute;top:0;width:10px;height:16px;border-radius:0 100% 0 100%;animation:fall 6s linear infinite}
+.big{font-size:38px;line-height:1;letter-spacing:-1px}
+.sub{font-size:9px;color:#cfe0b8;margin-top:8px;font-family:'Helvetica Neue',sans-serif;max-width:130px;line-height:1.5}
+.btn{display:inline-block;background:#e3a21a;color:#2a1a00;padding:6px 14px;font-size:8px;font-weight:700;letter-spacing:1px;border-radius:99px;margin-top:12px;font-family:'Helvetica Neue',sans-serif}
+.bottle{justify-self:center;position:relative;width:70px;height:130px;animation:bob 4s ease-in-out infinite}
+.cap{position:absolute;top:0;left:22px;width:26px;height:20px;background:#3b2a1a;border-radius:3px}
+.neck{position:absolute;top:20px;left:24px;width:22px;height:16px;background:rgba(122,66,8,.7)}
+.body{position:absolute;top:34px;left:0;width:70px;height:96px;border-radius:10px 10px 12px 12px;background:linear-gradient(90deg,rgba(122,66,8,.8),rgba(160,100,20,.55),rgba(122,66,8,.8));overflow:hidden}
+.oil{position:absolute;bottom:4px;left:4px;right:4px;height:64px;border-radius:6px;background:#6d8f1c}
+.label{position:absolute;top:30px;left:8px;right:8px;height:42px;background:#eef3e4;border-radius:3px;text-align:center;color:#12301f;padding-top:6px}
+.label b{display:block;font-size:12px}
+.label small{font-size:6px;font-family:'Helvetica Neue',sans-serif}
+.herbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;background:#0d2216}
+.h{border-left:2px solid #8fb339;padding-left:7px}
+.hn{font-size:10px}
+.hd{font-size:7px;color:#a9c28a;font-family:'Helvetica Neue',sans-serif;margin-top:2px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);background:#eef3e4;color:#16291c}
+.st{text-align:center;padding:10px 4px;border-right:1px solid rgba(0,0,0,.07)}
+.st:last-child{border-right:none}
+.sn{font-size:16px;color:#e3a21a}
+.sl{font-size:7px;letter-spacing:1px;text-transform:uppercase;color:#4d6354;margin-top:2px;font-family:'Helvetica Neue',sans-serif}
+.quote{padding:12px 16px;background:#12301f;border-left:3px solid #e3a21a;margin:8px 16px;font-size:10px;line-height:1.5}
+.quote small{display:block;color:#a9c28a;font-size:8px;margin-top:4px;font-family:'Helvetica Neue',sans-serif}
+</style></head><body>
+<nav><div class="logo">Aathis</div><div class="nav-links"><a href="#">Story</a><a href="#">Herbs</a><a href="#">Order</a></div></nav>
+<div class="hero">
+  <span class="leaf" style="left:8%;background:#8fb339;animation-delay:0s"></span>
+  <span class="leaf" style="left:30%;background:#5f8a2b;animation-delay:1.5s"></span>
+  <span class="leaf" style="left:52%;background:#b5cf5a;animation-delay:3s"></span>
+  <span class="leaf" style="left:75%;background:#3f7a3a;animation-delay:4.2s"></span>
+  <span class="leaf" style="left:92%;background:#8fb339;animation-delay:2.2s"></span>
+  <div><div class="big">Aathis</div><div class="sub">Herbal hair oil, slow-infused in coconut oil the traditional way.</div><div class="btn">Order Aathis oil</div></div>
+  <div class="bottle"><div class="cap"></div><div class="neck"></div><div class="body"><div class="oil"></div><div class="label"><b>Aathis</b><small>Herbal Hair Oil</small></div></div></div>
+</div>
+<div class="herbs">
+  <div class="h"><div class="hn">Bhringraj</div><div class="hd">Classic scalp herb</div></div>
+  <div class="h"><div class="hn">Amla</div><div class="hd">Rich in vitamin C</div></div>
+  <div class="h"><div class="hn">Hibiscus</div><div class="hd">Softness and shine</div></div>
+</div>
+<div class="steps">
+  <div class="st"><div class="sn">1</div><div class="sl">Harvest</div></div>
+  <div class="st"><div class="sn">2</div><div class="sl">Sun-dry</div></div>
+  <div class="st"><div class="sn">3</div><div class="sl">Infuse</div></div>
+  <div class="st"><div class="sn">4</div><div class="sl">Bottle</div></div>
+</div>
+<div class="quote">Light on the scalp and it washes out clean. I use it every Sunday.<small>Arjun, Coimbatore</small></div>
+</body></html>`,
+    fullHtml: `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aathis Herbal Oil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#12301f;--moss:#1f4a30;--leaf:#8fb339;--amber:#e3a21a;--paper:#eef3e4;--ink:#16291c;--muted:#4d6354;
+--serif:"Young Serif",Georgia,serif;--sans:"Figtree",system-ui,sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0d1a12;--ink:#e6efd9;--muted:#a3b8a6}}
+:root[data-theme="dark"]{--paper:#0d1a12;--ink:#e6efd9;--muted:#a3b8a6}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--forest);font-family:var(--sans);color:var(--ink);line-height:1.6;font-size:1.05rem}
+canvas#gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+section{position:relative;min-height:100vh;display:flex;align-items:center;padding:6rem 6vw}
+.in{position:relative;z-index:2;width:100%;max-width:1100px;margin:0 auto}
+.dark{background:radial-gradient(120% 90% at 70% 20%,var(--moss),var(--forest));color:#eaf2dc}
+.light{background:var(--paper)}
+.half{max-width:34rem}.right{margin-left:auto}
+h1,h2,h3{font-family:var(--serif);font-weight:400;line-height:1.05;margin:0 0 1rem}
+h1{font-size:clamp(4.5rem,15vw,11rem);letter-spacing:-.02em;margin-bottom:.5rem}
+h1 span{display:inline-block}
+h2{font-size:clamp(2.2rem,5vw,3.6rem)}
+h3{font-size:1.3rem}
+p{margin:0 0 1rem;max-width:34rem}
+.lede{font-size:1.3rem;color:#cfe0b8;max-width:26rem}
+.light p{color:var(--muted)}
+.btn{display:inline-block;padding:.9rem 1.6rem;border-radius:999px;background:var(--amber);color:#2a1a00;font-weight:700;text-decoration:none;border:0;font:inherit;font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;color:#eaf2dc;border:1.5px solid #8fb339;margin-left:.6rem}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+nav{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:1rem 6vw;color:#eaf2dc}
+nav b{font-family:var(--serif);font-size:1.4rem;font-weight:400}
+nav a{color:inherit;text-decoration:none;margin-left:1.4rem;font-weight:500}
+nav a:hover{color:var(--amber)}
+.herbs{display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem 2rem;max-width:36rem;margin-top:1.5rem}
+.herbs div{border-left:3px solid var(--leaf);padding-left:1rem}
+.herbs p{margin:0;font-size:.95rem;color:#cfe0b8}
+.steps{list-style:none;padding:0;margin:1.5rem 0 0;max-width:34rem;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:3rem 1fr;gap:1rem;padding:1rem 0;border-top:1px solid color-mix(in srgb,var(--muted) 35%,transparent)}
+.steps li::before{content:counter(s);font-family:var(--serif);font-size:2.2rem;color:var(--amber);line-height:1}
+.steps h3{margin:0 0 .2rem}.steps p{margin:0}
+blockquote{margin:0 0 1.6rem;padding-left:1.2rem;border-left:3px solid var(--amber);max-width:32rem}
+blockquote p{font-family:var(--serif);font-size:1.3rem;color:#eaf2dc;margin-bottom:.4rem}
+blockquote footer{color:#a9c28a;font-size:.95rem}
+.sizes{display:flex;gap:1rem;margin:1rem 0 1.4rem;flex-wrap:wrap}
+.sizes label{flex:1;min-width:8rem;border:1.5px solid var(--muted);border-radius:14px;padding:.9rem 1rem;cursor:pointer;color:var(--ink)}
+.sizes input{accent-color:var(--leaf);margin-right:.4rem}
+.sizes small{display:block;color:var(--muted)}
+.field{display:block;width:100%;max-width:26rem;margin-bottom:.9rem;padding:.8rem 1rem;border-radius:10px;border:1.5px solid var(--muted);background:transparent;color:var(--ink);font:inherit}
+#msg{margin-top:1rem;font-weight:500;color:var(--leaf);min-height:1.5rem}
+footer.site{position:relative;z-index:2;background:var(--forest);color:#a9c28a;padding:2rem 6vw;text-align:center;font-size:.9rem}
+@media (max-width:800px){
+ canvas#gl{opacity:.3}
+ .half{max-width:none}.right{margin-left:0}
+ .btn.ghost{margin:.8rem 0 0}
+ .herbs{grid-template-columns:1fr}
+ nav a{display:none}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}h1 span{animation:none!important}}
+h1 span{animation:rise 1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(60%) rotate(6deg)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+<nav><b>Aathis</b><div><a href="#about">Our story</a><a href="#herbs">Herbs</a><a href="#process">How it's made</a><a href="#order">Order</a></div></nav>
+
+<section class="dark" id="top"><div class="in">
+ <h1 aria-label="Aathis"><span style="animation-delay:.1s">A</span><span style="animation-delay:.18s">a</span><span style="animation-delay:.26s">t</span><span style="animation-delay:.34s">h</span><span style="animation-delay:.42s">i</span><span style="animation-delay:.5s">s</span></h1>
+ <p class="lede">Herbal hair oil, slow-infused in coconut oil the traditional way.</p>
+ <a class="btn" href="#order">Order Aathis oil</a><a class="btn ghost" href="#herbs">See what's inside</a>
+</div></section>
+
+<section class="light" id="about"><div class="in"><div class="half right">
+ <h2>Made like it was at home.</h2>
+ <p>Aathis started with one family recipe: fresh herbs, warmed gently in cold-pressed coconut oil until the oil turns deep green and smells of the garden.</p>
+ <p>No mineral oil, no added fragrance, no shortcuts. Every batch is small, filtered by hand and bottled in amber glass to keep the herbs fresh.</p>
+</div></div></section>
+
+<section class="dark" id="herbs"><div class="in"><div class="half">
+ <h2>Six herbs, one bottle.</h2>
+ <p class="lede" style="font-size:1.1rem">Each herb has a long history in Indian hair care.</p>
+ <div class="herbs">
+  <div><h3>Bhringraj</h3><p>The classic herb for scalp oils.</p></div>
+  <div><h3>Amla</h3><p>Rich in vitamin C, used for generations.</p></div>
+  <div><h3>Hibiscus</h3><p>Petals and leaves for softness and shine.</p></div>
+  <div><h3>Curry leaf</h3><p>A kitchen staple in South Indian hair oils.</p></div>
+  <div><h3>Fenugreek</h3><p>Soaked and infused for a smooth feel.</p></div>
+  <div><h3>Coconut oil</h3><p>Cold-pressed base that carries it all.</p></div>
+ </div>
+</div></div></section>
+
+<section class="light" id="process"><div class="in"><div class="half right">
+ <h2>From garden to bottle.</h2>
+ <ol class="steps">
+  <li><div><h3>Harvest</h3><p>Herbs are picked fresh in the morning.</p></div></li>
+  <li><div><h3>Sun-dry</h3><p>Dried in shade and sun to remove water.</p></div></li>
+  <li><div><h3>Infuse</h3><p>Heated slowly in coconut oil for several hours.</p></div></li>
+  <li><div><h3>Filter and bottle</h3><p>Strained by hand and sealed in amber glass.</p></div></li>
+ </ol>
+</div></div></section>
+
+<section class="dark" id="voices"><div class="in"><div class="half right">
+ <h2>What customers say.</h2>
+ <blockquote><p>My grandmother's oil smelled exactly like this. It's the first bottle that brought it back.</p><footer>Meena, Chennai</footer></blockquote>
+ <blockquote><p>Light on the scalp and it washes out clean. I use it every Sunday.</p><footer>Arjun, Coimbatore</footer></blockquote>
+</div></div></section>
+
+<section class="light" id="order"><div class="in"><div class="half right">
+ <h2>Order your bottle.</h2>
+ <p>Choose a size and leave your number. We'll call to confirm the order and delivery.</p>
+ <div class="sizes" role="radiogroup" aria-label="Bottle size">
+  <label><input type="radio" name="size" value="100 ml" checked>100 ml<small>Price on request</small></label>
+  <label><input type="radio" name="size" value="200 ml">200 ml<small>Price on request</small></label>
+ </div>
+ <input class="field" id="nm" placeholder="Your name" aria-label="Your name" autocomplete="name">
+ <input class="field" id="ph" placeholder="Phone number" aria-label="Phone number" inputmode="tel" autocomplete="tel">
+ <button class="btn" id="go" type="button">Request order</button>
+ <div id="msg" role="status"></div>
+</div></div></section>
+<footer class="site">Aathis Herbal Oil. Made in small batches in Tamil Nadu.</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+document.getElementById('go').addEventListener('click',function(){
+ var n=document.getElementById('nm').value.trim(),p=document.getElementById('ph').value.trim(),m=document.getElementById('msg');
+ if(!n||p.length<8){m.style.color='#b3542a';m.textContent='Enter your name and a phone number with at least 8 digits.';return}
+ var s=document.querySelector('input[name=size]:checked').value;
+ m.style.color='';m.textContent='Thank you, '+n+'. We will call '+p+' to confirm your '+s+' bottle.';
+});
+(function(){
+try{
+ var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ var cv=document.getElementById('gl');
+ var R=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true});
+ R.setPixelRatio(Math.min(devicePixelRatio,2));
+ var S=new THREE.Scene(),C=new THREE.PerspectiveCamera(40,1,.1,50);C.position.z=7;
+ S.add(new THREE.AmbientLight(0xffffff,.7));
+ var d=new THREE.DirectionalLight(0xfff0c8,1.1);d.position.set(3,4,5);S.add(d);
+ var pl=new THREE.PointLight(0xe3a21a,1.4,12);pl.position.set(-3,-1,3);S.add(pl);
+
+ function lathe(pts,mat){return new THREE.Mesh(new THREE.LatheGeometry(pts.map(function(p){return new THREE.Vector2(p[0],p[1])}),64),mat)}
+ var B=new THREE.Group();
+ var glass=lathe([[0,-1.1],[.82,-1.1],[.9,-1],[.9,.5],[.85,.85],[.5,1.1],[.3,1.2],[.3,1.5],[.34,1.55],[.34,1.65],[0,1.65]],
+  new THREE.MeshPhysicalMaterial({color:0x7a4208,transparent:true,opacity:.6,roughness:.08,clearcoat:1,side:THREE.DoubleSide}));
+ var oil=lathe([[0,-1.04],[.78,-1.04],[.85,-.94],[.85,.45],[0,.45]],
+  new THREE.MeshStandardMaterial({color:0x6d8f1c,emissive:0x2c4a08,roughness:.3,transparent:true,opacity:.9}));
+ var cap=new THREE.Mesh(new THREE.CylinderGeometry(.38,.4,.5,40),new THREE.MeshStandardMaterial({color:0x3b2a1a,roughness:.6}));cap.position.y=1.9;
+ var lc=document.createElement('canvas');lc.width=512;lc.height=300;var x=lc.getContext('2d');
+ x.fillStyle='#eef3e4';x.fillRect(0,0,512,300);x.fillStyle='#12301f';x.textAlign='center';
+ x.font='84px "Young Serif",Georgia,serif';x.fillText('Aathis',256,140);
+ x.font='30px Figtree,sans-serif';x.fillText('Herbal Hair Oil',256,190);x.fillStyle='#e3a21a';x.fillRect(196,215,120,5);
+ x.fillStyle='#4d6354';x.font='24px Figtree,sans-serif';x.fillText('100 ml',256,262);
+ var label=new THREE.Mesh(new THREE.CylinderGeometry(.915,.915,1.1,48,1,true,-1.1,2.2),new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(lc),roughness:.8,side:THREE.DoubleSide}));
+ label.position.y=-.2;
+ B.add(oil,glass,cap,label);S.add(B);
+
+ var sh=new THREE.Shape();sh.moveTo(0,0);sh.bezierCurveTo(.25,.15,.25,.6,0,1);sh.bezierCurveTo(-.25,.6,-.25,.15,0,0);
+ var lg=new THREE.ShapeGeometry(sh);lg.translate(0,-.5,0);
+ var cols=[0x8fb339,0x5f8a2b,0x3f7a3a,0xb5cf5a],L=new THREE.Group(),leaves=[];
+ for(var i=0;i<46;i++){
+  var m=new THREE.Mesh(lg,new THREE.MeshStandardMaterial({color:cols[i%4],side:THREE.DoubleSide,roughness:.7}));
+  var s=.25+Math.random()*.3;m.scale.set(s,s,s);
+  m.position.set((Math.random()-.5)*13,(Math.random()-.5)*9,-3+Math.random()*4.5);
+  m.userData={vy:.15+Math.random()*.25,sp:.3+Math.random()*.8,ph:Math.random()*6};
+  m.rotation.set(Math.random()*6,Math.random()*6,Math.random()*6);L.add(m);leaves.push(m);
+ }
+ S.add(L);
+
+ var mob=function(){return innerWidth<800};
+ var poses=[{x:2.3,y:-.1,s:1,r:0},{x:-2.5,y:0,s:1.05,r:2},{x:2.6,y:0,s:.95,r:4.2},{x:2.5,y:0,s:1.05,r:6.5},{x:-2.5,y:0,s:1,r:9},{x:-2.5,y:-.1,s:1.1,r:11.5}];
+ var secs=[].slice.call(document.querySelectorAll('section'));
+ var cur={x:2.3,y:0,s:1,r:0},mx=0,my=0,t0=performance.now();
+ addEventListener('pointermove',function(e){mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
+ function size(){R.setSize(innerWidth,innerHeight,false);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()}
+ addEventListener('resize',size);size();
+
+ function frame(){
+  var t=(performance.now()-t0)/1000,vh=innerHeight,i=0;
+  for(var k=0;k<secs.length;k++){if(secs[k].getBoundingClientRect().top<=vh*.5)i=k}
+  var r=secs[i].getBoundingClientRect(),f=Math.min(1,Math.max(0,(vh*.5-r.top)/r.height));
+  f=f*f*(3-2*f);var a=poses[i],b=poses[Math.min(i+1,poses.length-1)];
+  var tg={x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,s:a.s+(b.s-a.s)*f,r:a.r+(b.r-a.r)*f};
+  if(mob())tg.x=0;
+  var k2=reduce?1:.07;
+  cur.x+=(tg.x-cur.x)*k2;cur.y+=(tg.y-cur.y)*k2;cur.s+=(tg.s-cur.s)*k2;cur.r+=(tg.r-cur.r)*k2;
+  B.position.set(cur.x,cur.y+(reduce?0:Math.sin(t*1.2)*.08),0);
+  B.scale.setScalar(cur.s*(mob()?.8:1));
+  B.rotation.y=cur.r*.9+(reduce?0:t*.25)+mx*.5;
+  B.rotation.x=my*.15;B.rotation.z=reduce?0:Math.sin(t*.8)*.03;
+  L.position.y=(scrollY/Math.max(1,document.body.scrollHeight-vh))*4;
+  if(!reduce)leaves.forEach(function(m){var u=m.userData;
+   m.rotation.x+=.004*u.sp;m.rotation.y+=.006*u.sp;m.position.y-=.002*u.vy;
+   m.position.x+=Math.sin(t*u.sp+u.ph)*.0015;
+   if(m.position.y<-5.5)m.position.y=5.5;
+  });
+  R.render(S,C);requestAnimationFrame(frame);
+ }
+ frame();
+}catch(e){document.getElementById('gl').style.display='none';console.error(e)}
+})();
+</script>
+</body>
+</html>`
   },
   {
     id: 'fashion',
@@ -2312,6 +2841,9 @@ document.querySelectorAll('.menu-tab').forEach(tab=>{tab.addEventListener('click
 </body></html>`
   },
 ]
+
+
+
 
 // ── NO JS iframe access needed — CSS animation handles scroll ──
 // (removed useAutoScroll to avoid cross-origin SecurityError)
